@@ -8,21 +8,68 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
+
 from kivy.core.window import Window
 from kivy.config import Config
 
 class MainScreen(Screen):
-    input_items = ObjectProperty()
-    input_prices = ObjectProperty()
-    input_persons = ObjectProperty()
-
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         self.input_items = []
         self.input_prices = []
         self.input_persons= []
+        self.height_item = []
+
     def on_enter(self):
-        Window.size = (1080/2,2400/3)
+        # Window.bind(on_resize=self.on_window_resize)
+        Window.size = (1080/3,2400/3)
+
+        # window_width, window_height = Window.size
+        button_obj = []
+        label_obj = []
+        textinput_obj = []
+        
+        
+        height_item = 50
+        for child in self.children:
+            if isinstance(child,Button):
+                button_obj.append(child)
+            elif isinstance(child,Label):
+                label_obj.append(child)
+            elif isinstance(child, TextInput):
+                textinput_obj.append(child)
+            for c in child.children:
+                if isinstance(c,Button):
+                    button_obj.append(c)
+                elif isinstance(c,Label):
+                    label_obj.append(c)
+                elif isinstance(c, TextInput):
+                    textinput_obj.append(c)
+                for c_sub in c.children:
+                    if isinstance(c_sub,Button):
+                        button_obj.append(c_sub)
+                    elif isinstance(c_sub,Label):
+                        label_obj.append(c_sub)
+                        
+                    elif isinstance(c_sub, TextInput):
+                        textinput_obj.append(c_sub)
+                    for c_sub2 in c_sub.children:
+                        if isinstance(c_sub2,Button):
+                            button_obj.append(c_sub2)
+                        elif isinstance(c_sub2,Label):
+                            label_obj.append(c_sub2)
+                        elif isinstance(c_sub2, TextInput):
+                            textinput_obj.append(c_sub2)
+        for i in range(len(button_obj)):
+                print(button_obj[i].height)
+        for i in range(len(label_obj)):
+                print(label_obj[i].height)
+        for i in range(len(textinput_obj)):
+                print(textinput_obj[i].height)
+
+    def on_window_resize(self, instance, width, height):
+        print("Size:", Window.width, Window.height)
+
 
     def add_to_right(self):
         data_grid = self.ids.right_boxlayout2
@@ -46,15 +93,13 @@ class MainScreen(Screen):
         data_grid.add_widget(textinput_price)
 
     def add_to_left_preset(self):
-        self.add_to_left()
-        self.add_to_left()
-        self.add_to_left()
+        for i in range(10):
+            self.add_to_left()
+        
 
-        self.add_to_right()
-        self.add_to_right()
-        self.add_to_right()
-        self.add_to_right()
-        self.add_to_right()
+        for i in range(5):
+            self.add_to_right()
+        
 
         items = self.input_items
         prices = self.input_prices
@@ -63,10 +108,25 @@ class MainScreen(Screen):
         items[0].text = "Item A"
         items[1].text = "Item B"
         items[2].text = "Item C"
+        items[3].text = "Item A"
+        items[4].text = "Item B"
+        items[5].text = "Item C"
+        items[6].text = "Item A"
+        items[7].text = "Item B"
+        items[8].text = "Item C"
+        items[9].text = "Item A"
+        
 
         prices[0].text = "53.00"
         prices[1].text = "5"
         prices[2].text = "0.05"
+        prices[3].text = "10"
+        prices[4].text = "10"
+        prices[5].text = "10"
+        prices[6].text = "10"
+        prices[7].text = "10"
+        prices[8].text = "10"
+        prices[9].text = "10"
 
         persons[0].text = "Alex"
         persons[1].text = "Bob"
@@ -76,8 +136,6 @@ class MainScreen(Screen):
 
 
 class NewScreen(Screen):
-    button_grid = ObjectProperty()
-    grid_objects = ObjectProperty
     def __init__(self, **kwargs):
         super(NewScreen, self).__init__(**kwargs)
         self.button_grid = []
@@ -90,7 +148,10 @@ class NewScreen(Screen):
         prices = mn_screen.input_prices
         persons = mn_screen.input_persons
 
-        layout = self.ids.table_grid
+        layout_left = self.ids.table_grid_left
+        layout_right = self.ids.table_grid_right
+        layout_left_header = self.ids.grid_left_header
+        layout_right_header = self.ids.grid_right_header
         
         grid_created = False
         for child in self.children:
@@ -98,7 +159,8 @@ class NewScreen(Screen):
                 for c_sub in c.children:
                     for c_sub2 in c_sub.children:
                         for c_sub3 in c_sub2.children:
-                            grid_created = True
+                            for c_sub4 in c_sub3.children:
+                                grid_created = True
         
         # for i in range(len(layout_delete)):
         #     print("Delete", layout_delete[i], layout_delete[i].text)
@@ -107,23 +169,38 @@ class NewScreen(Screen):
         #Adds to Grid
         if grid_created == False:
             row_objects = []
-            layout.cols = len(persons) + 2
-            layout.width = 500
+
+            layout_left.cols = 2
+            layout_left_header.cols = 2
+
+            layout_right.cols = len(persons)
+            layout_right_header.cols = len(persons)
+            layout_right_header.size_hint = (None, 0.2)
+
+            layout_right.width = 500
+            layout_right_header.width = 500
+
             price_total = 0.00
             
-            #Empty Label
-            label_empty = Label(text='',size_hint=(None,None), height=50, width = 80, font_size=20)
-            row_objects.append(label_empty)
-            layout.add_widget(label_empty)
-            label_empty = Label(text='',size_hint=(None,None), height=50, width = 50, font_size=20)
-            row_objects.append(label_empty)
-            layout.add_widget(label_empty)
+            #Item Header
+            label_item = Label(text='Item',size_hint=(None,None), height=50, font_size=20)
+            row_objects.append(label_item)
+            #layout_left.add_widget(label_item)
+            layout_left_header.add_widget(label_item)
+
+            #Price Header
+            label_item = Label(text='Price',size_hint=(None,None), height=50, font_size=20)
+            row_objects.append(label_item)
+            #layout_left.add_widget(label_item)
+            layout_left_header.add_widget(label_item)
+
 
             #Adds persons
             for i in range(len(persons)):
                 label_item = Label(text=f'{persons[i].text}',size_hint=(None,None), height=50, width = 100, font_size=20)
                 row_objects.append(label_item)
-                layout.add_widget(label_item)
+                #layout_right.add_widget(label_item)
+                layout_right_header.add_widget(label_item)
             
             self.grid_objects.append(row_objects)
 
@@ -134,39 +211,21 @@ class NewScreen(Screen):
                 label_price = Label(text=f'{prices[i].text}', size_hint=(None,None), height=50, width = 50, font_size=20)
                 row_objects.append(label_item)
                 row_objects.append(label_price)
-                layout.add_widget(label_item)
-                layout.add_widget(label_price)
+                layout_left.add_widget(label_item)
+                layout_left.add_widget(label_price)
                 
-                price_total = price_total + float(prices[i].text)
+                if prices[i].text != "":
+                    price_total = price_total + float(prices[i].text)
 
 
                 #Add Buttons
                 for j in range(len(persons)):
-                    button = Button(text='Add', size_hint=(None, None), height=50, width = 100)
+                    button = Button(text='Add', size_hint=(None, None), height=50, width = 100, font_size=15)
                     button.bind(on_press=self.change_color)
                     row_objects.append(button)
-                    layout.add_widget(button)
+                    layout_right.add_widget(button)
                 
                 self.grid_objects.append(row_objects)
-
-            #Add totals
-            row_objects = []
-            price_per = price_total / (len(persons)+1)
-
-            label_total = Label(text='Sub : $',size_hint=(None,None), height=50, width = 80, font_size=20)
-            row_objects.append(label_total)
-            layout.add_widget(label_total)
-
-            label_totalprice = Label(text=f'{price_total:.2f}',size_hint=(None,None), height=50, width = 50, font_size=20)
-            row_objects.append(label_totalprice)
-            layout.add_widget(label_totalprice)
-
-            for i in range(len(persons)):
-                button = Button(text=f'${price_per:.2f}', size_hint=(None, None), height=50, width = 100)
-                row_objects.append(button)
-                layout.add_widget(button)
-
-            self.grid_objects.append(row_objects)
 
         mystr = ""
         obj_str = ""
@@ -197,7 +256,7 @@ class NewScreen(Screen):
         grid_obj = self.grid_objects
         color_grn = [0, 1, 0, 1]
         
-        for i in range(1,len(grid_obj)-1):
+        for i in range(1,len(grid_obj)):
             row_obj = grid_obj[i]
             row_price = float(grid_obj[i][1].text)
             row_green = 0

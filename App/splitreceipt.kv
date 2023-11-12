@@ -37,12 +37,30 @@ ScreenManager:
                         size_hint_y: None
                         height: self.minimum_height
 
+                Label:
+                    id: label_subtotal
+                    text: "Sub Total"
+                    size_hint_y: 0.1
+                
+                TextInput:
+                    id: textinput_tax
+                    hint_text: "Tax"
+                    size_hint_y: 0.1
+
+                TextInput:
+                    id: textinput_tip
+                    hint_text: "Tip"
+                    size_hint_y: 0.1
+
+                Label:
+                    id: label_grandtotal
+                    text: "Grand Total"
+                    size_hint_y: 0.1
+
                 Button:
                     text: "Add Item"
                     on_release: root.add_to_left_preset()
                     size_hint_y: 0.1
-
-
 
             BoxLayout:
                 id: right_boxlayout
@@ -79,19 +97,64 @@ ScreenManager:
             on_release: app.root.current = "main_screen"
             size_hint: (1, None)
             height: 50
-
+        
         BoxLayout:
-            orientation: 'vertical'
-            ScrollView:
-                do_scroll_y: True
-                do_scroll_x: True
+            orientation: 'horizontal'
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.6
+
                 GridLayout:
-                    id: table_grid
-                    cols: 1
+                    id: grid_left_header
+                    cols: 2
                     spacing: 10
-                    orientation: 'lr-tb'
-                    size_hint_y: None
-                    size_hint_x: None
+                    size_hint_y: 0.1
                     height: self.minimum_height
-                    width: self.minimum_width
+
+                ScrollView:
+                    id: scrollview_left
+                    scrollview_right: scrollview_right
+                    do_scroll_y: True
+                    scroll_y: self.scrollview_right.scroll_y
+                    GridLayout:
+                        id: table_grid_left
+                        cols: 1
+                        spacing: 10
+                        size_hint_y: None
+                        height: self.minimum_height
+                        
+            BoxLayout:
+                orientation: 'vertical'
+
+                ScrollView:
+                    id: scrollview_right_header
+                    scrollview_right: scrollview_right
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    size_hint_y: 0.1
+                    scroll_x: self.scrollview_right.scroll_x
+                    GridLayout:
+                        id: grid_right_header
+                        cols: 1
+                        spacing: 10
+                        size_hint_y: None
+                        size_hint_x: None
+                        height: self.minimum_height
+                        width: self.minimum_width
+                ScrollView:
+                    id: scrollview_right
+                    scrollview_left: scrollview_left
+                    do_scroll_y: True
+                    do_scroll_x: True
+                    scroll_y: self.scrollview_left.scroll_y
+                    GridLayout:
+                        id: table_grid_right
+                        cols: 1
+                        spacing: 10
+                        orientation: 'lr-tb'
+                        size_hint_y: None
+                        size_hint_x: None
+                        height: self.minimum_height
+                        width: self.minimum_width
         
