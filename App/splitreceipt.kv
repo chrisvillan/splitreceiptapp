@@ -8,9 +8,13 @@ ScreenManager:
     spacing: 10
 
     BoxLayout:
-        orientation: 'horizontal'
-        size_hint: (1, None)
-        height: 50
+        orientation: 'vertical'
+        
+        Button:
+            text: "Go to New Screen"
+            on_release: app.root.current = "new_screen"
+            size_hint: (1, None)
+            height: 50
 
         Label:
             text: "# of People"
@@ -27,26 +31,26 @@ ScreenManager:
             id: input_items
             multiline: False
             font_size: 24
-        
-    Button:
-        text: 'Display Text'
-        size_hint: (1, None)
-        height: 50
-        on_press: root.create_table()
-
-    GridLayout:
-        id: table_grid
-        cols: 1
 
 <NewScreen>:
-    Button:
-        text: 'Display Text'
-        size_hint: (1, None)
-        height: 50
-        on_press: root.create_table()
+    orientation: 'vertical'
+    padding: 10
+    spacing: 10
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: "Go to Main Screen"
+            on_release: app.root.current = "main_screen"
+            size_hint: (1, None)
+            height: 50
 
-    GridLayout:
-        id: table_grid
-        cols: 1
+        BoxLayout:
+            orientation: 'vertical'
 
+            GridLayout:
+                id: table_grid
+                cols: 1
+            
+            
 
+        
