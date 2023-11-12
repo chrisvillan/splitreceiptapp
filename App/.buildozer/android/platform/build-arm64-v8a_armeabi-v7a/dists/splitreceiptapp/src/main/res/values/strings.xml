@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Split Receipt</string>
-    <string name="private_version">ba2ffd5a4f6d19fdd22b88a56978c8a220b62997</string>
-    <string name="presplash_color">#000000</string>
-    <string name="urlScheme">kivy</string>
-</resources>

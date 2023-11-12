@@ -39,22 +39,40 @@ ScreenManager:
 
                 Label:
                     id: label_subtotal
-                    text: "Sub Total"
+                    text: "Sub Total: $0.00"
                     size_hint_y: 0.1
                 
-                TextInput:
-                    id: textinput_tax
-                    hint_text: "Tax"
+                BoxLayout:
+                    id: tax_boxlayout
+                    orientation: 'horizontal'
+                    spacing: 10
                     size_hint_y: 0.1
 
-                TextInput:
-                    id: textinput_tip
-                    hint_text: "Tip"
+                    Label:
+                        id: label_tax
+                        text: "Tax $:"
+                        
+                    TextInput:
+                        id: textinput_tax
+                        hint_text: "Tax"
+
+                BoxLayout:
+                    id: tip_boxlayout
+                    orientation: 'horizontal'
+                    spacing: 10
                     size_hint_y: 0.1
+
+                    Label:
+                        id: label_tip
+                        text: "Tip $:"
+
+                    TextInput:
+                        id: textinput_tip
+                        hint_text: "Tip"
 
                 Label:
                     id: label_grandtotal
-                    text: "Grand Total"
+                    text: "Grand Total: $0.00"
                     size_hint_y: 0.1
 
                 Button:
@@ -123,6 +141,11 @@ ScreenManager:
                         spacing: 10
                         size_hint_y: None
                         height: self.minimum_height
+
+                BoxLayout:
+                    id: bottom_left_boxlayout
+                    orientation: 'vertical'
+                    size_hint_y: 0.1
                         
             BoxLayout:
                 orientation: 'vertical'
@@ -157,4 +180,23 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
+                ScrollView:
+                    id: scrollview_right_bottom
+                    scrollview_right: scrollview_right
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    size_hint_y: 0.1
+                    scroll_x: self.scrollview_right.scroll_x
+                    GridLayout:
+                        id: grid_right_bottom
+                        cols: 1
+                        spacing: 10
+                        size_hint_y: None
+                        size_hint_x: None
+                        height: self.minimum_height
+                        width: self.minimum_width
+
+            
+
+                
         

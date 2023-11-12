@@ -19,6 +19,7 @@ class MainScreen(Screen):
         self.input_prices = []
         self.input_persons= []
         self.height_item = []
+        self.input_totals = []
 
     def on_enter(self):
         # Window.bind(on_resize=self.on_window_resize)
@@ -38,6 +39,7 @@ class MainScreen(Screen):
                 label_obj.append(child)
             elif isinstance(child, TextInput):
                 textinput_obj.append(child)
+
             for c in child.children:
                 if isinstance(c,Button):
                     button_obj.append(c)
@@ -45,14 +47,15 @@ class MainScreen(Screen):
                     label_obj.append(c)
                 elif isinstance(c, TextInput):
                     textinput_obj.append(c)
+
                 for c_sub in c.children:
                     if isinstance(c_sub,Button):
                         button_obj.append(c_sub)
                     elif isinstance(c_sub,Label):
                         label_obj.append(c_sub)
-                        
                     elif isinstance(c_sub, TextInput):
                         textinput_obj.append(c_sub)
+
                     for c_sub2 in c_sub.children:
                         if isinstance(c_sub2,Button):
                             button_obj.append(c_sub2)
@@ -60,12 +63,34 @@ class MainScreen(Screen):
                             label_obj.append(c_sub2)
                         elif isinstance(c_sub2, TextInput):
                             textinput_obj.append(c_sub2)
+                        
+                        for c_sub3 in c_sub2.children:
+                            if isinstance(c_sub3, Button):
+                                button_obj.append(c_sub3)
+                            elif isinstance(c_sub3, Label):
+                                label_obj.append(c_sub3)
+                            elif isinstance(c_sub3, TextInput):
+                                textinput_obj.append(c_sub3)
+
+
         for i in range(len(button_obj)):
                 print(button_obj[i].height)
         for i in range(len(label_obj)):
                 print(label_obj[i].height)
         for i in range(len(textinput_obj)):
                 print(textinput_obj[i].height)
+                print(textinput_obj[i].hint_text)
+                if textinput_obj[i].hint_text == "Tip":
+                    self.input_totals.append(textinput_obj[i])
+                if textinput_obj[i].hint_text == "Tax":
+                    self.input_totals.append(textinput_obj[i])
+        
+        for p in range(len(self.input_totals)):
+            print(f'OBJECT: {self.input_totals[p]}')
+            self.input_totals[p].bind(text=self.update_totals)
+        # tip_obj.bind(text=self.update_totals)
+        # tax_obj.bind(text=self.update_totals)
+
 
     def on_window_resize(self, instance, width, height):
         print("Size:", Window.width, Window.height)
@@ -83,7 +108,7 @@ class MainScreen(Screen):
         textinput_item = TextInput(hint_text='Item', size_hint=(1, None), height=100, font_size=20)
         label_middle = Label(text='$', size_hint=(0.1,None), height=100, font_size=50)
         textinput_price = TextInput(hint_text='Price', size_hint=(0.6, None), height=100, font_size= 40)
-
+        textinput_price.bind(text=self.update_totals)
         self.input_items.append(textinput_item)
         data_grid.add_widget(textinput_item)
 
@@ -91,7 +116,7 @@ class MainScreen(Screen):
 
         self.input_prices.append(textinput_price)
         data_grid.add_widget(textinput_price)
-
+        
     def add_to_left_preset(self):
         for i in range(10):
             self.add_to_left()
@@ -134,6 +159,36 @@ class MainScreen(Screen):
         persons[3].text = "Daniel"
         persons[4].text = "Evelyn"
 
+    def update_totals(self, instance,text):
+        prices = self.input_prices
+
+        subtotal = 0.00
+        grandtotal = 0.00
+        tip = 0.00
+        tax = 0.00
+        
+        tip_obj = self.input_totals[0]
+        tax_obj = self.input_totals[1]
+        if tip_obj.text != "":
+            tip = float(self.input_totals[0].text)
+        if tax_obj.text != "":
+            tax = float(self.input_totals[1].text)
+        
+          
+    
+        for p in prices:
+            if p.text != "":
+                subtotal = subtotal + float(p.text)
+
+        if subtotal != 0:
+            grandtotal = grandtotal + subtotal
+        if tip != 0:
+            grandtotal = grandtotal + tip
+        if tax != 0:
+            grandtotal = grandtotal + tax
+        
+        self.ids.label_subtotal.text = f'Sub Total: ${subtotal:.2f}'
+        self.ids.label_grandtotal.text =f'Grand Total: ${grandtotal:.2f}'
 
 class NewScreen(Screen):
     def __init__(self, **kwargs):
@@ -152,7 +207,7 @@ class NewScreen(Screen):
         layout_right = self.ids.table_grid_right
         layout_left_header = self.ids.grid_left_header
         layout_right_header = self.ids.grid_right_header
-        
+
         grid_created = False
         for child in self.children:
             for c in child.children:
@@ -242,6 +297,42 @@ class NewScreen(Screen):
                     obj_str = "Unknown"
                 mystr = mystr + " | " + obj_str
             print(mystr)
+
+
+        #updates totals 
+        bottom_left = self.ids.bottom_left_boxlayout
+
+        #adds subtotal
+        subtotal_layout = BoxLayout(orientation='horizontal', size_hint_y = 1, spacing=10, padding=10)
+        subtotal_label_item = Label(text="Sub Total $:")
+        subtotal_label_price = Label(text="0.00")
+        subtotal_layout.add_widget(subtotal_label_item)
+        subtotal_layout.add_widget(subtotal_label_price)
+        bottom_left.add_widget(subtotal_layout)
+
+        #adds tax
+        tax_layout = BoxLayout(orientation='horizontal', size_hint_y = 1, spacing = 10, padding=10)
+        tax_label_item = Label(text="Tax $:")
+        tax_label_price = Label(text="0.00")
+        tax_layout.add_widget(tax_label_item)
+        tax_layout.add_widget(tax_label_price)
+        bottom_left.add_widget(tax_layout)
+
+        #adds tip
+        tip_layout = BoxLayout(orientation='horizontal', size_hint_y = 1, spacing = 10, padding=10)
+        tip_label_item = Label(text="Tip $:")
+        tip_label_price = Label(text="0.00")
+        tip_layout.add_widget(tip_label_item)
+        tip_layout.add_widget(tip_label_price)
+        bottom_left.add_widget(tip_layout)
+
+        #adds grand total
+        grandtotal_layout = BoxLayout(orientation='horizontal', size_hint_y = 1, spacing = 10, padding=10)
+        grandtotal_label_item = Label(text="Grand Total $:")
+        grandtotal_label_price = Label(text="0.00")
+        grandtotal_layout.add_widget(grandtotal_label_item)
+        grandtotal_layout.add_widget(grandtotal_label_price)
+        bottom_left.add_widget(grandtotal_layout)
 
     def change_color(self, instance):
         grid_obj = self.grid_objects 
