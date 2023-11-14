@@ -4,49 +4,93 @@ ScreenManager:
 
 <MainScreen>:
     orientation: 'vertical'
-    padding: 10
-    spacing: 10
-    size: 100, 100
+    #--- Whole screen
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 0.13,0.34,0.48,1
+            Rectangle:
+                pos: self.pos
+                size: self.size
         orientation: 'vertical'
         Button:
             text: "Go to New Screen"
             on_release: app.root.current = "new_screen"
-            size_hint: (1, None)
-            height: 50
+            size_hint_y: 0.11111
 
+        #--- Below top button
         BoxLayout:
+            canvas.before:
+                Color:
+                    rgba: 0.22,0.64,0.65,1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
             id: data_boxlayout
             orientation: 'horizontal'
-            spacing: 10
             size_hint_y: 1
 
+            #--- Left layout below top button
             BoxLayout:
+                canvas.before:
+                    Color:
+                        rgba: 0.34,0.80,0.60,1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
                 id: left_boxlayout
                 orientation: 'vertical'
-                spacing: 10
-                size_hint_y: 1
+                size_hint_x: 1
 
+                #--- Left Scrollview
                 ScrollView:
+                    canvas.before:
+                        Color:
+                            rgba: 1.00,0.80,0.95,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
                     do_scroll_y: True
+                    size_hint_y: 1
+
                     GridLayout:
+                        canvas.before:
+                            Color:
+                                rgba: 0.75,0.99,1,1
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
                         id: left_boxlayout2
                         cols: 3
-                        spacing: 10
                         orientation: 'lr-tb'
                         size_hint_y: None
                         height: self.minimum_height
 
-                Label:
-                    id: label_subtotal
-                    text: "Sub Total: $0.00"
-                    size_hint_y: 0.1
-                
+                #--- Subtotal row
                 BoxLayout:
+                    orienation: 'horizontal'
+                    size_hint_y: 0.07694
+
+                    Label:
+                        id: label_subtotal_item
+                        text: "Sub Total: $"
+                
+                    Label:
+                        id: label_subtotal_price
+                        text: "0.00"
+
+                
+                #--- Tax row
+                BoxLayout:
+                    canvas.before:
+                        Color:
+                            rgba: 0.47,0.00,0.00,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
                     id: tax_boxlayout
+                    size_hint_y: 0.07694
                     orientation: 'horizontal'
-                    spacing: 10
-                    size_hint_y: 0.1
 
                     Label:
                         id: label_tax
@@ -56,12 +100,18 @@ ScreenManager:
                         id: textinput_tax
                         hint_text: "Tax"
 
+                #--- Tip row
                 BoxLayout:
+                    canvas.before:
+                        Color:
+                            rgba: 0.00,0.09,0.27,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
                     id: tip_boxlayout
                     orientation: 'horizontal'
-                    spacing: 10
-                    size_hint_y: 0.1
-
+                    size_hint_y: 0.07694
+                    
                     Label:
                         id: label_tip
                         text: "Tip $:"
@@ -70,93 +120,218 @@ ScreenManager:
                         id: textinput_tip
                         hint_text: "Tip"
 
-                Label:
-                    id: label_grandtotal
-                    text: "Grand Total: $0.00"
-                    size_hint_y: 0.1
+                #--- Grand Total row
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: 0.07694
 
+                    Label:
+                        id: label_grandtotal_item
+                        text: "Grand Total: $"
+
+                    Label:
+                        id: label_grandtotal_price
+                        text: "0.00"
+
+                #--- Add Item row
                 Button:
                     text: "Add Item"
                     on_release: root.add_to_left_preset()
-                    size_hint_y: 0.1
+                    size_hint_y: 0.07694
 
+            #--- Right Layout below top
             BoxLayout:
+                canvas.before:
+                    Color:
+                        rgba: 0.23,0.05,0.64,1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
                 id: right_boxlayout
                 orientation: 'vertical'
-                spacing: 10
-                size_hint_y: 1
-                size_hint_x: 0.4
+                size_hint_x: 0.4285
 
                 ScrollView:
+                    canvas.before:
+                        Color:
+                            rgba: 0.82,0.29,0.36,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
                     do_scroll_y: True
+                    size_hint_y: 1
                     GridLayout:
+                        canvas.before:
+                            Color:
+                                rgba: 1.00,0.74,0.26,1
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
                         id: right_boxlayout2
                         cols: 1
-                        spacing: 10
                         orientation: 'tb-lr'
                         size_hint_y: None
                         height: self.minimum_height
                 Button:
                     text: "Add Person"
                     on_release: root.add_to_right()
-                    size_hint_y: 0.1
+                    size_hint_y: 0.0588
 
 
 
 <NewScreen>:
     orientation: 'vertical'
-    padding: 10
-    spacing: 10
     
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 0.13,0.34,0.48,1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         orientation: 'vertical'
+
         Button:
             text: "Go to Main Screen"
             on_release: app.root.current = "main_screen"
-            size_hint: (1, None)
-            height: 50
-        
+            size_hint_y: 0.11111
+
         BoxLayout:
+            canvas.before:
+                Color:
+                    rgba: 0.75,0.99,1.00,1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
             orientation: 'horizontal'
 
+            #--- Left Layout
             BoxLayout:
-                orientation: 'vertical'
-                size_hint_x: 0.6
+                canvas.before:
+                    Color:
+                        rgba: 1.00,0.80,0.95,1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
 
+                orientation: 'vertical'
+                size_hint_x: 0.6667
+
+                #--- Left Header
                 GridLayout:
+                    canvas.before:
+                        Color:
+                            rgba: 0.47,0.00,0.00,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                     id: grid_left_header
                     cols: 2
-                    spacing: 10
-                    size_hint_y: 0.1
-                    height: self.minimum_height
+                    size_hint_y: 0.0769
 
+                #--- Left Scroll
                 ScrollView:
+                    canvas.before:
+                        Color:
+                            rgba: 1.00,0.74,0.26,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                     id: scrollview_left
                     scrollview_right: scrollview_right
                     do_scroll_y: True
                     scroll_y: self.scrollview_right.scroll_y
+                    size_hint_y: 1
+
                     GridLayout:
+                        canvas.before:
+                            Color:
+                                rgba: 0.50,0.93,0.60,1
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+
                         id: table_grid_left
                         cols: 1
                         spacing: 10
                         size_hint_y: None
                         height: self.minimum_height
 
+                #--- Bottom Layout
                 BoxLayout:
+                    canvas.before:
+                        Color:
+                            rgba: 0.34,0.80,0.60,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                     id: bottom_left_boxlayout
                     orientation: 'vertical'
-                    size_hint_y: 0.1
-                        
+                    size_hint_y: 0.3076
+
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            id: label_bl_subtotal_item
+                            text: "Sub Total $"
+                        Label:
+                            id: label_bl_subtotal_price
+                            text: "0.00"
+                            size_hint_x: 0.6667
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            id: label_bl_tax_item
+                            text: "Tax $"
+                        Label:
+                            id: label_bl_tax_price
+                            text: "0.00"
+                            size_hint_x: 0.6667
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            id: label_bl_tip_item
+                            text: "Tip $"
+                        Label:
+                            id: label_bl_tip_price
+                            text: "0.00"
+                            size_hint_x: 0.6667
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Label:
+                            id: label_bl_grandtotal_item
+                            text: "Grand Total $"
+                        Label:
+                            id: label_bl_grandtotal_price
+                            text: "0.00"
+                            size_hint_x: 0.6667
+
+
+
+            #--- Right Layout   
             BoxLayout:
                 orientation: 'vertical'
 
                 ScrollView:
+                    canvas.before:
+                        Color:
+                            rgba: 0.34,0.80,0.60,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                     id: scrollview_right_header
                     scrollview_right: scrollview_right
                     do_scroll_x: True
                     do_scroll_y: False
-                    size_hint_y: 0.1
                     scroll_x: self.scrollview_right.scroll_x
+                    size_hint_y: 0.0769
+
                     GridLayout:
                         id: grid_right_header
                         cols: 1
@@ -165,12 +340,22 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
+
                 ScrollView:
+                    canvas.before:
+                        Color:
+                            rgba: 0.00,0.09,0.27,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                     id: scrollview_right
                     scrollview_left: scrollview_left
                     do_scroll_y: True
                     do_scroll_x: True
                     scroll_y: self.scrollview_left.scroll_y
+                    size_hint_y: 1
+
                     GridLayout:
                         id: table_grid_right
                         cols: 1
@@ -180,17 +365,26 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
+
                 ScrollView:
+                    canvas.before:
+                        Color:
+                            rgba: 1.00,0.74,0.26,1
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
                     id: scrollview_right_bottom
                     scrollview_right: scrollview_right
                     do_scroll_x: True
                     do_scroll_y: False
-                    size_hint_y: 0.1
                     scroll_x: self.scrollview_right.scroll_x
+                    size_hint_y: 0.3076
+
                     GridLayout:
                         id: grid_right_bottom
                         cols: 1
-                        spacing: 10
+                        orientation: 'lr-tb'
                         size_hint_y: None
                         size_hint_x: None
                         height: self.minimum_height
