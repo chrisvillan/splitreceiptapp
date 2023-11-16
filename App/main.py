@@ -14,6 +14,10 @@ from kivy.config import Config
 
 # To update for app deployment
 # buildozer -v android debug
+Config.set('graphics', 'width', '540')
+Config.set('graphics', 'height', '1200')
+Config.write()
+
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -21,15 +25,17 @@ class MainScreen(Screen):
         self.input_items = []
         self.input_prices = []
         self.input_persons= []
-        self.height_item = 120.02/3
-        self.width_item = 200/3
         self.input_totals = []
         self.totals = [0.00,0.00,0.00,0.00]
-        
+
+        window_width, window_height = Window.size
+        # self.height_item = 120.02
+        self.height_item = window_height * 0.05
+        self.width_item = window_width * 0.18519
     def on_enter(self):
         # Window.bind(on_resize=self.on_window_resize)
-        Window.size = (1080/3,2400/3)
-
+        # Window.size = (1080/3,2400/3)
+        print("WindowSize: " + str(Window.size))
         # window_width, window_height = Window.size
         button_obj = []
         label_obj = []
@@ -138,7 +144,7 @@ class MainScreen(Screen):
         prices = self.input_prices
         persons = self.input_persons
 
-        items[0].text = "Item 1"
+        items[0].text = "Chicken Katsu Udon Rice"
         items[1].text = "Item 2"
         items[2].text = "Item 3"
         items[3].text = "Item 4"
@@ -240,7 +246,7 @@ class NewScreen(Screen):
 
         layout_left = self.ids.table_grid_left
         layout_right = self.ids.table_grid_right
-        layout_left_header = self.ids.grid_left_header
+        # layout_left_header = self.ids.grid_left_header
         layout_right_header = self.ids.grid_right_header
         layout_right_bottom = self.ids.grid_right_bottom
 
@@ -265,8 +271,8 @@ class NewScreen(Screen):
             row_objects = []
             
 
-            layout_left.cols = 2
-            layout_left_header.cols = 2
+            layout_left.cols = 3
+            # layout_left_header.cols = 2
 
             layout_right.cols = len(persons)
 
@@ -282,17 +288,16 @@ class NewScreen(Screen):
             height_item = mn_screen.height_item 
             width_item = mn_screen.width_item
             
-            #Item Header
-            label_item = Label(text='Item')
+            #Adds Item and Price header to grid object
+            # #Item Header
+            label_item = self.ids.label_left_header_item
             row_objects.append(label_item)
-            #layout_left.add_widget(label_item)
-            layout_left_header.add_widget(label_item)
-
-            #Price Header
-            label_item = Label(text='Price')
+            label_item = self.ids.label_left_header_price
             row_objects.append(label_item)
-            #layout_left.add_widget(label_item)
-            layout_left_header.add_widget(label_item)
+            label_item= self.ids.label_left_header_qty
+            row_objects.append(label_item)
+            # #layout_left.add_widget(label_item)
+            # layout_left_header.add_widget(label_item)
 
 
             #Adds persons
@@ -303,15 +308,22 @@ class NewScreen(Screen):
 
             self.grid_objects.append(row_objects)
 
+
+            temp = []
             #Add items
             for i in range(len(items)):
                 row_objects = []
-                label_item = Label(text=f'{items[i].text} : $',size_hint_y=None, height=height_item)
-                label_price = Label(text=f'{prices[i].text}', size_hint_y=None, height=height_item)
+                label_item = Label(text=f'{items[i].text}', size_hint_x=0.5, size_hint_y=None, height=height_item)
+                temp.append(label_item)
+                price_str = float(prices[i].text)
+                label_price = Label(text=f'{price_str:.2f}', size_hint_x=0.25, size_hint_y=None, height=height_item)
+                label_qty = Label(text='0', size_hint_x=0.25, size_hint_y=None, height=height_item)
                 row_objects.append(label_item)
                 row_objects.append(label_price)
+                row_objects.append(label_qty)
                 layout_left.add_widget(label_item)
                 layout_left.add_widget(label_price)
+                layout_left.add_widget(label_qty)
                 
                 if prices[i].text != "":
                     price_total = price_total + float(prices[i].text)
@@ -332,6 +344,7 @@ class NewScreen(Screen):
             row_objects = []
             row_objects.append(self.ids.label_bl_subtotal_item)
             row_objects.append(self.ids.label_bl_subtotal_price)
+            row_objects.append(self.ids.label_bl_subtotal_total)
             for i in range(len(persons)):
                 label_item_bottom = Label(text=f'0.00',size_hint=(None,None), height=height_item, width = width_item)
                 layout_right_bottom.add_widget(label_item_bottom)
@@ -343,6 +356,7 @@ class NewScreen(Screen):
             row_objects = []
             row_objects.append(self.ids.label_bl_tax_item)
             row_objects.append(self.ids.label_bl_tax_price)
+            row_objects.append(self.ids.label_bl_tax_total)
             for i in range(len(persons)):
                 label_item_bottom = Label(text=f'0.00',size_hint=(None,None), height=height_item, width = width_item)
                 layout_right_bottom.add_widget(label_item_bottom)
@@ -354,6 +368,7 @@ class NewScreen(Screen):
             row_objects = []
             row_objects.append(self.ids.label_bl_tip_item)
             row_objects.append(self.ids.label_bl_tip_price)
+            row_objects.append(self.ids.label_bl_tip_total)
             for i in range(len(persons)):
                 label_item_bottom = Label(text=f'0.00',size_hint=(None,None), height=height_item, width = width_item)
                 layout_right_bottom.add_widget(label_item_bottom)
@@ -365,6 +380,7 @@ class NewScreen(Screen):
             row_objects = []
             row_objects.append(self.ids.label_bl_grandtotal_item)
             row_objects.append(self.ids.label_bl_grandtotal_price)
+            row_objects.append(self.ids.label_bl_grandtotal_total)
             for i in range(len(persons)):
                 label_item_bottom = Label(text=f'0.00',size_hint=(None,None), height=height_item, width = width_item)
                 layout_right_bottom.add_widget(label_item_bottom)
@@ -394,6 +410,61 @@ class NewScreen(Screen):
         self.ids.label_bl_tip_price.text = str(f'{mn_screen.totals[2]:.2f}')
         self.ids.label_bl_grandtotal_price.text = str(f'{mn_screen.totals[3]:.2f}')
 
+        
+        #AUTOFIT
+        label_items = []
+        label_items.append(self.ids.label_bl_subtotal_item)
+        label_items.append(self.ids.label_bl_subtotal_price)
+        label_items.append(self.ids.label_bl_subtotal_total)
+
+        label_items.append(self.ids.label_bl_tax_item)
+        label_items.append(self.ids.label_bl_tax_price)
+        label_items.append(self.ids.label_bl_tax_total)
+
+        label_items.append(self.ids.label_bl_tip_item)
+        label_items.append(self.ids.label_bl_tip_price)
+        label_items.append(self.ids.label_bl_tip_total)
+
+
+        label_items.append(self.ids.label_bl_grandtotal_item)
+        label_items.append(self.ids.label_bl_grandtotal_price)
+        label_items.append(self.ids.label_bl_grandtotal_total)
+
+        temp_item = temp[0]
+        # temp_item.text_size = temp_item.size
+        temp_item.texture_update()
+        # temp_item.text = "Chicken Katsu\nUdon Rice"
+
+        # label_items.append(temp_item)
+        
+        self.resize_label(temp_item)
+
+        for i in range(len(label_items)):
+            label_item = label_items[i]
+            label_item.texture_update()
+            max_width = label_item.width
+            while label_item.texture_size[0] > max_width:
+                label_item.font_size -= 1
+                label_item.texture_update()
+        
+        
+        # label_item = self.ids.label_bl_subtotal_price
+        # print(label_item.width)
+        # print(label_item.texture_size)
+        
+    def resize_label(self, obj):
+            obj.text = "Chicken Katsu Udon Rice"
+            obj.texture_update()
+            obj.text_size = obj.size
+            obj.halign = 'left'
+            obj.valign = 'top'
+            
+            print(obj.text)
+            print("size: " + str(obj.size))
+            print("text_size: " + str(obj.text_size))
+            print("texture_size: " + str(obj.texture_size))
+            print("font_size: " + str(obj.font_size))
+            
     def change_color(self, instance):
         grid_obj = self.grid_objects 
         if instance.background_color == [0, 1, 0, 1]:
@@ -407,7 +478,11 @@ class NewScreen(Screen):
         grid_obj = self.grid_objects
         color_grn = [0, 1, 0, 1]
         
+        col_qty = 2
+
+        
         for i in range(1,len(grid_obj)):
+            qty_count = 0
             row_obj = grid_obj[i]
             row_price = float(grid_obj[i][1].text)
             row_green = 0
@@ -417,6 +492,7 @@ class NewScreen(Screen):
                     if row_obj[j].background_color == color_grn:
                         row_green += 1
             
+            grid_obj[i][col_qty].text = str(row_green)
 
             for j in range(len(row_obj)):
                 if isinstance(row_obj[j], Button):
@@ -436,15 +512,19 @@ class NewScreen(Screen):
         row_gt = len(grid_objects)-1
 
         #for range in loops
-        col_btn_start = 2
-        col_btn_end = len(grid_objects[1])
+        col_btn_start = 3
+        col_btn_end = len(grid_objects[0])
         row_btn_start = 1
         row_btn_end = len(grid_objects)-4
         
-        total_subtotal = float(grid_objects[row_st][1].text)
-        total_tax = float(grid_objects[row_tax][1].text)
-        total_tip = float(grid_objects[row_tip][1].text)
-        total_grandtotal = float(grid_objects[row_gt][1].text)
+        col_price = 1
+        col_qty = 2
+        total_subtotal = float(grid_objects[row_st][col_price].text)
+        total_tax = float(grid_objects[row_tax][col_price].text)
+        total_tip = float(grid_objects[row_tip][col_price].text)
+        total_grandtotal = float(grid_objects[row_gt][col_price].text)
+
+        #-----BY PERSON-----
 
         #subtotals
         for j in range(col_btn_start,col_btn_end):
@@ -483,11 +563,33 @@ class NewScreen(Screen):
             grandtotal_price = subtotal_price + tax_price + tip_price
             grandtotal_object = grid_objects[row_gt][j]
             grandtotal_object.text = f'{grandtotal_price:.2f}'
+        
+
+        qty_totals = [0.00,0.00,0.00,0.00]
+        str_text = ""
+        #-----BY ROW-----
+        count = 0
+        for i in range(row_st, row_gt+1):
+            for j in range(col_btn_start,col_btn_end):
+                str_text = grid_objects[i][j].text
+                if str_text.replace(".","").isnumeric():
+                    qty_totals[count] = qty_totals[count] + float(str_text)
+            
+            count += 1
+        
+        grid_objects[row_st][col_qty].text = str(f'{qty_totals[0]:.2f}')
+        grid_objects[row_tax][col_qty].text = str(f'{qty_totals[1]:.2f}')
+        grid_objects[row_tip][col_qty].text = str(f'{qty_totals[2]:.2f}')
+        grid_objects[row_gt][col_qty].text = str(f'{qty_totals[3]:.2f}')
+
+        print(qty_totals)
+        
                 
 
     
 class SplitReceipt(App):
     def build(self):
+        
         sm = ScreenManager()
         main_screen = MainScreen(name='main_screen')
         new_screen = NewScreen(name='new_screen')

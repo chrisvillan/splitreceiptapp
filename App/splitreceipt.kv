@@ -42,7 +42,7 @@ ScreenManager:
                 orientation: 'vertical'
                 size_hint_x: 1
 
-                #--- Left Scrollview
+                #--- Left Scrollview 
                 ScrollView:
                     canvas.before:
                         Color:
@@ -183,64 +183,42 @@ ScreenManager:
     orientation: 'vertical'
     
     BoxLayout:
-        canvas.before:
-            Color:
-                rgba: 0.13,0.34,0.48,1
-            Rectangle:
-                pos: self.pos
-                size: self.size
-
         orientation: 'vertical'
-
+        
         Button:
             text: "Go to Main Screen"
             on_release: app.root.current = "main_screen"
             size_hint_y: 0.11111
 
         BoxLayout:
-            canvas.before:
-                Color:
-                    rgba: 0.75,0.99,1.00,1
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-
             orientation: 'horizontal'
 
             #--- Left Layout
             BoxLayout:
-                canvas.before:
-                    Color:
-                        rgba: 1.00,0.80,0.95,1
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-
                 orientation: 'vertical'
                 size_hint_x: 0.6667
 
                 #--- Left Header
                 GridLayout:
-                    canvas.before:
-                        Color:
-                            rgba: 0.47,0.00,0.00,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-
                     id: grid_left_header
-                    cols: 2
+                    cols: 3
                     size_hint_y: 0.0769
+
+                    Label:
+                        id: label_left_header_item
+                        text: 'Item'
+                        size_hint_x: 0.5
+                    Label:
+                        id: label_left_header_price
+                        text: 'Price'
+                        size_hint_x: 0.25
+                    Label:
+                        id: label_left_header_qty
+                        text: 'Qty'
+                        size_hint_x: 0.25
 
                 #--- Left Scroll
                 ScrollView:
-                    canvas.before:
-                        Color:
-                            rgba: 1.00,0.74,0.26,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-
                     id: scrollview_left
                     scrollview_right: scrollview_right
                     do_scroll_y: True
@@ -248,68 +226,79 @@ ScreenManager:
                     size_hint_y: 1
 
                     GridLayout:
-                        canvas.before:
-                            Color:
-                                rgba: 0.50,0.93,0.60,1
-                            Rectangle:
-                                pos: self.pos
-                                size: self.size
-
                         id: table_grid_left
                         cols: 1
-                        spacing: 10
                         size_hint_y: None
                         height: self.minimum_height
 
                 #--- Bottom Layout
                 BoxLayout:
-                    canvas.before:
-                        Color:
-                            rgba: 0.34,0.80,0.60,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-
                     id: bottom_left_boxlayout
                     orientation: 'vertical'
                     size_hint_y: 0.3076
 
                     BoxLayout:
                         orientation: 'horizontal'
+                        spacing: 10
                         Label:
                             id: label_bl_subtotal_item
-                            text: "Sub Total $"
+                            text: "Sub Total"
+                            size_hint_x: 0.5
                         Label:
                             id: label_bl_subtotal_price
                             text: "0.00"
-                            size_hint_x: 0.6667
+                            size_hint_x: 0.25
+                        Label:
+                            id: label_bl_subtotal_total
+                            text: "0.00"
+                            size_hint_x: 0.25
                     BoxLayout:
                         orientation: 'horizontal'
+                        spacing: 10
+                        
                         Label:
                             id: label_bl_tax_item
-                            text: "Tax $"
+                            text: "Tax"
+                            size_hint_x: 0.5
                         Label:
                             id: label_bl_tax_price
                             text: "0.00"
-                            size_hint_x: 0.6667
+                            size_hint_x: 0.25
+                        Label:
+                            id: label_bl_tax_total
+                            text: "0.00"
+                            size_hint_x: 0.25
                     BoxLayout:
                         orientation: 'horizontal'
+                        spacing: 10
+
                         Label:
                             id: label_bl_tip_item
-                            text: "Tip $"
+                            text: "Tip"
+                            size_hint_x: 0.5
                         Label:
                             id: label_bl_tip_price
                             text: "0.00"
-                            size_hint_x: 0.6667
+                            size_hint_x: 0.25
+                        Label:
+                            id: label_bl_tip_total
+                            text: "0.00"
+                            size_hint_x: 0.25
                     BoxLayout:
                         orientation: 'horizontal'
+                        spacing: 10
                         Label:
                             id: label_bl_grandtotal_item
-                            text: "Grand Total $"
+                            text: "Grand Total"
+                            size_hint_x: 0.5
                         Label:
                             id: label_bl_grandtotal_price
                             text: "0.00"
-                            size_hint_x: 0.6667
+                            size_hint_x: 0.25
+                        Label:
+                            id: label_bl_grandtotal_total
+                            text: "0.00"
+                            size_hint_x: 0.25
 
 
 
@@ -318,13 +307,6 @@ ScreenManager:
                 orientation: 'vertical'
 
                 ScrollView:
-                    canvas.before:
-                        Color:
-                            rgba: 0.34,0.80,0.60,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-
                     id: scrollview_right_header
                     scrollview_right: scrollview_right
                     do_scroll_x: True
@@ -342,13 +324,6 @@ ScreenManager:
                         width: self.minimum_width
 
                 ScrollView:
-                    canvas.before:
-                        Color:
-                            rgba: 0.00,0.09,0.27,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-
                     id: scrollview_right
                     scrollview_left: scrollview_left
                     do_scroll_y: True
@@ -367,13 +342,6 @@ ScreenManager:
                         width: self.minimum_width
 
                 ScrollView:
-                    canvas.before:
-                        Color:
-                            rgba: 1.00,0.74,0.26,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-
                     id: scrollview_right_bottom
                     scrollview_right: scrollview_right
                     do_scroll_x: True
