@@ -26,6 +26,7 @@ class MainScreen(Screen):
         self.input_prices = []
         self.input_persons= []
         self.input_totals = []
+        self.label_totals= []
         self.totals = [0.00,0.00,0.00,0.00]
 
         window_width, window_height = Window.size
@@ -94,16 +95,10 @@ class MainScreen(Screen):
                 if textinput_obj[i].hint_text == "Tax":
                     self.input_totals.append(textinput_obj[i])
         
+        #on text change
         for p in range(len(self.input_totals)):
             print(f'OBJECT: {self.input_totals[p]}')
             self.input_totals[p].bind(text=self.update_totals)
-        # tip_obj.bind(text=self.update_totals)
-        # tax_obj.bind(text=self.update_totals)
-
-
-    def on_window_resize(self, instance, width, height):
-        print("Size:", Window.width, Window.height)
-
 
     def add_to_right(self):
         textinput_height = self.height_item 
@@ -144,7 +139,7 @@ class MainScreen(Screen):
         prices = self.input_prices
         persons = self.input_persons
 
-        items[0].text = "Chicken Katsu Udon Rice"
+        items[0].text = "Item 1"
         items[1].text = "Item 2"
         items[2].text = "Item 3"
         items[3].text = "Item 4"
@@ -194,8 +189,10 @@ class MainScreen(Screen):
         persons[8].text = "Iggy"
         persons[9].text = "Jackie"
 
+        self.input_totals[0].text = '20'
+        self.input_totals[1].text = '10'
 
-    def update_totals(self, instance,text):
+    def update_totals(self, instance, text):
         prices = self.input_prices
 
         subtotal = 0.00
@@ -205,13 +202,15 @@ class MainScreen(Screen):
         
         tip_obj = self.input_totals[0]
         tax_obj = self.input_totals[1]
+        tax_label = self.ids.label_tax
+        tip_label = self.ids.label_tip
+
+
         if tip_obj.text != "":
             tip = float(self.input_totals[0].text)
         if tax_obj.text != "":
             tax = float(self.input_totals[1].text)
         
-          
-    
         for p in prices:
             if p.text != "":
                 subtotal = subtotal + float(p.text)
@@ -226,11 +225,22 @@ class MainScreen(Screen):
             grandtotal = grandtotal + tip
             self.totals[2] = tip
         
-        
+        if subtotal!= 0.00:
+            tax_factor = tax/subtotal
+            tip_factor = tip/subtotal
+            tax = tax_factor*100
+            tip = tip_factor*100
+            tax_label.text = f'Tax ({tax:.2f}%)'
+            tip_label.text = f'Tip ({tip:.2f}%)'
+        else:
+            tax_label.text = 'Tax (0.00%)'
+            tip_label.text = 'Tip (0.00%)'
+
+
         self.totals[3] = grandtotal
         self.ids.label_subtotal_price.text = f'{subtotal:.2f}'
         self.ids.label_grandtotal_price.text =f'{grandtotal:.2f}'
-
+            
 class NewScreen(Screen):
     def __init__(self, **kwargs):
         super(NewScreen, self).__init__(**kwargs)
@@ -246,11 +256,8 @@ class NewScreen(Screen):
 
         layout_left = self.ids.table_grid_left
         layout_right = self.ids.table_grid_right
-        # layout_left_header = self.ids.grid_left_header
         layout_right_header = self.ids.grid_right_header
         layout_right_bottom = self.ids.grid_right_bottom
-
-        
 
         grid_created = False
         for child in self.children:
@@ -261,10 +268,6 @@ class NewScreen(Screen):
                             for c_sub4 in c_sub3.children:
                                 if isinstance(c_sub4, Button):
                                     grid_created = True
-        
-        # for i in range(len(layout_delete)):
-        #     print("Delete", layout_delete[i], layout_delete[i].text)
-        #     layout.remove_widget(layout_delete[i])
 
         #Adds to Grid
         if grid_created == False:
@@ -282,7 +285,6 @@ class NewScreen(Screen):
             layout_right_bottom.cols = len(persons)
             layout_right_bottom.size_hint = (None, None)
 
-
             price_total = 0.00
 
             height_item = mn_screen.height_item 
@@ -296,8 +298,6 @@ class NewScreen(Screen):
             row_objects.append(label_item)
             label_item= self.ids.label_left_header_qty
             row_objects.append(label_item)
-            # #layout_left.add_widget(label_item)
-            # layout_left_header.add_widget(label_item)
 
 
             #Adds persons
@@ -338,7 +338,6 @@ class NewScreen(Screen):
                 
                 self.grid_objects.append(row_objects)
 
-            
 
             #Subtotal
             row_objects = []
@@ -363,6 +362,8 @@ class NewScreen(Screen):
                 row_objects.append(label_item_bottom)
 
             self.grid_objects.append(row_objects)
+            
+            
 
             #Tip
             row_objects = []
@@ -375,6 +376,7 @@ class NewScreen(Screen):
                 row_objects.append(label_item_bottom)
 
             self.grid_objects.append(row_objects)
+            
 
             #Grand Total
             row_objects = []
@@ -406,10 +408,15 @@ class NewScreen(Screen):
 
         #update totals
         self.ids.label_bl_subtotal_price.text = str(f'{mn_screen.totals[0]:.2f}')
-        self.ids.label_bl_tax_price.text = str(f'{mn_screen.totals[1]:.2f}')
-        self.ids.label_bl_tip_price.text = str(f'{mn_screen.totals[2]:.2f}')
-        self.ids.label_bl_grandtotal_price.text = str(f'{mn_screen.totals[3]:.2f}')
 
+        self.ids.label_bl_tax_item.text = mn_screen.ids.label_tax.text
+        self.ids.label_bl_tax_price.text = str(f'{mn_screen.totals[1]:.2f}')
+
+        self.ids.label_bl_tip_item.text = mn_screen.ids.label_tip.text
+        self.ids.label_bl_tip_price.text = str(f'{mn_screen.totals[2]:.2f}')
+        
+        self.ids.label_bl_grandtotal_price.text = str(f'{mn_screen.totals[3]:.2f}')
+        
         
         #AUTOFIT
         label_items = []
@@ -453,7 +460,7 @@ class NewScreen(Screen):
         # print(label_item.texture_size)
         
     def resize_label(self, obj):
-            obj.text = "Chicken Katsu Udon Rice"
+            # obj.text = "Chicken Katsu Udon Rice"
             obj.texture_update()
             obj.text_size = obj.size
             obj.halign = 'left'
