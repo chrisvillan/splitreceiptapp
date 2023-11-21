@@ -1,66 +1,41 @@
 ScreenManager:
     MainScreen:
-    NewScreen:
+    GridScreen:
 
 <MainScreen>:
     orientation: 'vertical'
     #--- Whole screen
     BoxLayout:
-        canvas.before:
-            Color:
-                rgba: 0.13,0.34,0.48,1
-            Rectangle:
-                pos: self.pos
-                size: self.size
+        id: mn_bxlt
         orientation: 'vertical'
+        
+        #--- Go to GridScreen
         Button:
-            text: "Go to New Screen"
-            on_release: app.root.current = "new_screen"
+            id: to_grscreen_btn
+            text: "Go to Grid Screen"
+            on_release: app.root.current = "grid_screen"
             size_hint_y: 0.11111
 
-        #--- Below top button
+        #--- Below button
         BoxLayout:
-            canvas.before:
-                Color:
-                    rgba: 0.22,0.64,0.65,1
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-            id: data_boxlayout
+            id: mn_sub_bxlt
             orientation: 'horizontal'
             size_hint_y: 1
 
-            #--- Left layout below top button
+            #--- Left layout
             BoxLayout:
-                canvas.before:
-                    Color:
-                        rgba: 0.34,0.80,0.60,1
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                id: left_boxlayout
+                id: mn_left_bxlt
                 orientation: 'vertical'
                 size_hint_x: 1
 
                 #--- Left Scrollview 
                 ScrollView:
-                    canvas.before:
-                        Color:
-                            rgba: 1.00,0.80,0.95,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
+                    id: mn_left_scview
                     do_scroll_y: True
                     size_hint_y: 1
 
                     GridLayout:
-                        canvas.before:
-                            Color:
-                                rgba: 0.75,0.99,1,1
-                            Rectangle:
-                                pos: self.pos
-                                size: self.size
-                        id: left_boxlayout2
+                        id: mn_left_scview_grdlt
                         cols: 3
                         orientation: 'lr-tb'
                         size_hint_y: None
@@ -68,289 +43,287 @@ ScreenManager:
 
                 #--- Subtotal row
                 BoxLayout:
+                    id: mn_left_sbtotal_bxlt
                     orienation: 'horizontal'
                     size_hint_y: 0.07694
 
                     Label:
-                        id: label_subtotal_item
+                        id: mn_left_sbtotal_label_desc
                         text: "Sub Total: $"
                 
                     Label:
-                        id: label_subtotal_price
+                        id: mn_left_sbtotal_label_price
                         text: "0.00"
 
-                
                 #--- Tax row
                 BoxLayout:
-                    canvas.before:
-                        Color:
-                            rgba: 0.47,0.00,0.00,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    id: tax_boxlayout
+                    id: mn_left_sbtotal_bxlt
                     size_hint_y: 0.07694
                     orientation: 'horizontal'
 
                     Label:
-                        id: label_tax
+                        id: mn_left_tax_label_desc
                         text: "Tax $:"
                         
-                    TextInput:
-                        id: textinput_tax
-                        hint_text: "Tax"
+                    CurrencyTextInput:
+                        id: mn_left_tax_txinput
+                        multiline: False
+                        hint_text: "0.00"
+                        on_text: root.update_taxtip()
 
                 #--- Tip row
                 BoxLayout:
-                    canvas.before:
-                        Color:
-                            rgba: 0.00,0.09,0.27,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    id: tip_boxlayout
+                    id: mn_left_tip_bxlt
                     orientation: 'horizontal'
                     size_hint_y: 0.07694
                     
                     Label:
-                        id: label_tip
+                        id: mn_left_tip_label_desc
                         text: "Tip $:"
 
-                    TextInput:
-                        id: textinput_tip
-                        hint_text: "Tip"
+                    CurrencyTextInput:
+                        id: mn_left_tip_txinput
+                        hint_text: "0.00"
+                        on_text: root.update_taxtip()
 
                 #--- Grand Total row
                 BoxLayout:
+                    id: mn_left_grtotal_bxlt
                     orientation: 'horizontal'
                     size_hint_y: 0.07694
 
                     Label:
-                        id: label_grandtotal_item
+                        id: mn_left_grtotal_label_desc
                         text: "Grand Total: $"
 
                     Label:
-                        id: label_grandtotal_price
+                        id: mn_left_grtotal_label_price
                         text: "0.00"
 
                 #--- Add Item row
                 Button:
+                    id: mn_left_additem_btn
                     text: "Add Item"
                     on_release: root.add_to_left_preset()
                     size_hint_y: 0.07694
 
-            #--- Right Layout below top
+            #--- Right Layout
             BoxLayout:
-                canvas.before:
-                    Color:
-                        rgba: 0.23,0.05,0.64,1
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                id: right_boxlayout
+                id: mn_right_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.4285
 
                 ScrollView:
-                    canvas.before:
-                        Color:
-                            rgba: 0.82,0.29,0.36,1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
+                    id: mn_right_scview
                     do_scroll_y: True
                     size_hint_y: 1
+
                     GridLayout:
-                        canvas.before:
-                            Color:
-                                rgba: 1.00,0.74,0.26,1
-                            Rectangle:
-                                pos: self.pos
-                                size: self.size
-                        id: right_boxlayout2
+                        id: mn_right_scview_grdlt
                         cols: 1
                         orientation: 'tb-lr'
                         size_hint_y: None
                         height: self.minimum_height
+
                 Button:
+                    id: mn_right_addprsn_btn
                     text: "Add Person"
                     on_release: root.add_to_right()
                     size_hint_y: 0.0588
 
-
-
-<NewScreen>:
+<GridScreen>:
     orientation: 'vertical'
     
+    #--- Whole Screen
     BoxLayout:
+        id: grd_bxlt
         orientation: 'vertical'
         
+        #---Go to MainScreen
         Button:
+            id: to_mnscreen_btn
             text: "Go to Main Screen"
             on_release: app.root.current = "main_screen"
             size_hint_y: 0.11111
 
+        #--- Below button
         BoxLayout:
+            id: grd_sub_bxlt
             orientation: 'horizontal'
 
             #--- Left Layout
             BoxLayout:
+                id: grd_left_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.6667
 
                 #--- Left Header
                 GridLayout:
-                    id: grid_left_header
+                    id: grd_left_hdr_grdlt
                     cols: 3
                     size_hint_y: 0.0769
 
                     Label:
-                        id: label_left_header_item
+                        id: grd_left_hdr_label_desc
                         text: 'Item'
                         size_hint_x: 0.5
                     Label:
-                        id: label_left_header_price
+                        id: grd_left_hdr_label_price
                         text: 'Price'
                         size_hint_x: 0.25
                     Label:
-                        id: label_left_header_qty
+                        id: grd_left_hdr_label_qty
                         text: 'Qty'
                         size_hint_x: 0.25
 
                 #--- Left Scroll
                 ScrollView:
-                    id: scrollview_left
-                    scrollview_right: scrollview_right
+                    id: grd_left_scview
+                    grd_right_scview: grd_right_scview
+
                     do_scroll_y: True
-                    scroll_y: self.scrollview_right.scroll_y
+                    scroll_y: self.grd_right_scview.scroll_y
                     size_hint_y: 1
 
                     GridLayout:
-                        id: table_grid_left
+                        id: grd_left_scview_grdlt
                         cols: 1
                         size_hint_y: None
+                        orientation: 'lr-tb'
                         height: self.minimum_height
 
                 #--- Bottom Layout
                 BoxLayout:
-                    id: bottom_left_boxlayout
+                    id: grd_left_ftr_bxlt
                     orientation: 'vertical'
                     size_hint_y: 0.3076
 
+                    #--- Sub Total 
                     BoxLayout:
+                        id: grd_left_ftr_sbtotal_bxlt
                         orientation: 'horizontal'
-                        spacing: 10
+                        
                         Label:
-                            id: label_bl_subtotal_item
+                            id: grd_left_ftr_sbtotal_label_desc
                             text: "Sub Total"
                             size_hint_x: 0.5
                         Label:
-                            id: label_bl_subtotal_price
+                            id: grd_left_ftr_sbtotal_label_total
                             text: "0.00"
                             size_hint_x: 0.25
                         Label:
-                            id: label_bl_subtotal_total
+                            id: grd_left_ftr_sbtotal_label_bal
                             text: "0.00"
                             size_hint_x: 0.25
+
+                    #--- Tax 
                     BoxLayout:
+                        id: grd_left_ftr_tax_bxlt
                         orientation: 'horizontal'
-                        spacing: 10
                         
                         Label:
-                            id: label_bl_tax_item
+                            id: grd_left_ftr_tax_label_desc
                             text: "Tax"
                             size_hint_x: 0.5
                         Label:
-                            id: label_bl_tax_price
+                            id: grd_left_ftr_tax_label_total
                             text: "0.00"
                             size_hint_x: 0.25
                         Label:
-                            id: label_bl_tax_total
+                            id: grd_left_ftr_tax_label_bal
                             text: "0.00"
                             size_hint_x: 0.25
+
+                    #--- Tip 
                     BoxLayout:
+                        id: grd_left_ftr_tip_bxlt
                         orientation: 'horizontal'
-                        spacing: 10
 
                         Label:
-                            id: label_bl_tip_item
+                            id: grd_left_ftr_tip_label_desc
                             text: "Tip"
                             size_hint_x: 0.5
                         Label:
-                            id: label_bl_tip_price
+                            id: grd_left_ftr_tip_label_total
                             text: "0.00"
                             size_hint_x: 0.25
                         Label:
-                            id: label_bl_tip_total
+                            id: grd_left_ftr_tip_label_bal
                             text: "0.00"
                             size_hint_x: 0.25
+
+                    #--- Grand Total 
                     BoxLayout:
+                        id: grd_left_ftr_grtotal_bxlt
                         orientation: 'horizontal'
-                        spacing: 10
+                        
                         Label:
-                            id: label_bl_grandtotal_item
+                            id: grd_left_ftr_grtotal_label_desc
                             text: "Grand Total"
                             size_hint_x: 0.5
                         Label:
-                            id: label_bl_grandtotal_price
+                            id: grd_left_ftr_grtotal_label_total
                             text: "0.00"
                             size_hint_x: 0.25
                         Label:
-                            id: label_bl_grandtotal_total
+                            id: grd_left_ftr_grtotal_label_bal
                             text: "0.00"
                             size_hint_x: 0.25
 
-
-
             #--- Right Layout   
             BoxLayout:
+                id: grd_right_bxlt
                 orientation: 'vertical'
 
+                #--- Header 
                 ScrollView:
-                    id: scrollview_right_header
-                    scrollview_right: scrollview_right
+                    id: grd_right_hdr_scview
+                    grd_right_scview: grd_right_scview
+
                     do_scroll_x: True
                     do_scroll_y: False
-                    scroll_x: self.scrollview_right.scroll_x
+                    scroll_x: self.grd_right_scview.scroll_x
                     size_hint_y: 0.0769
-
+                    
                     GridLayout:
-                        id: grid_right_header
+                        id: grd_right_hdr_scview_grdlt
                         cols: 1
-                        spacing: 10
                         size_hint_y: None
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
 
+                #--- Mid Scrollview GridLayout 
                 ScrollView:
-                    id: scrollview_right
-                    scrollview_left: scrollview_left
+                    id: grd_right_scview
+                    grd_left_scview: grd_left_scview
+
                     do_scroll_y: True
                     do_scroll_x: True
-                    scroll_y: self.scrollview_left.scroll_y
+                    scroll_y: self.grd_left_scview.scroll_y
                     size_hint_y: 1
 
                     GridLayout:
-                        id: table_grid_right
+                        id: grd_right_scview_grdlt
                         cols: 1
-                        spacing: 10
                         orientation: 'lr-tb'
                         size_hint_y: None
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
 
+                #--- Footer 
                 ScrollView:
-                    id: scrollview_right_bottom
-                    scrollview_right: scrollview_right
+                    id: grd_right_ftr_scview
+                    grd_right_scview: grd_right_scview
+                    
                     do_scroll_x: True
                     do_scroll_y: False
-                    scroll_x: self.scrollview_right.scroll_x
+                    scroll_x: self.grd_right_scview.scroll_x
                     size_hint_y: 0.3076
 
                     GridLayout:
-                        id: grid_right_bottom
+                        id: grd_right_ftr_scview_grdlt
                         cols: 1
                         orientation: 'lr-tb'
                         size_hint_y: None
