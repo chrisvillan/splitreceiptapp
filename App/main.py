@@ -95,8 +95,8 @@ class MainScreen(Screen):
         persons[8].text = "Iggy"
         persons[9].text = "Jackie"
 
-        self.ids.mn_left_tax_txinput.text = '10.00'
-        self.ids.mn_left_tip_txinput.text = '20.00'
+        self.ids.mn_left_tax_txinput.text = '7.75'
+        self.ids.mn_left_tip_txinput.text = '15.00'
 
     #Need this function in case tax/tip is entered before items are inputted
     def update_taxtip(self):
@@ -214,14 +214,25 @@ class GridScreen(Screen):
                 button.bind(on_press=self.change_color)
                 layout_right.add_widget(button)
                 
-        #Subtotal/Tax/Tip/Grandtotal
+        #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
         for i in range(len(persons)*row):
             label_item = Label(text=f'0.00',size_hint=(None,None), height=height_item, width = width_item)
             layout_right_btm.add_widget(label_item)
-        
+
+        self.import_mnscreen_totals()
         self.update_ftr_totals()
-    
+
+    def import_mnscreen_totals(self):
+        mn_screen = self.manager.get_screen("main_screen")
+        #Import Left Subtotal/Tax/Tip/Grandtotal
+        self.ids.grd_left_ftr_sbtotal_label_total.text = mn_screen.ids.mn_left_sbtotal_label_price.text
+        self.ids.grd_left_ftr_tax_label_desc.text = mn_screen.ids.mn_left_tax_label_desc.text
+        self.ids.grd_left_ftr_tax_label_total.text = mn_screen.ids.mn_left_tax_txinput.text
+        self.ids.grd_left_ftr_tip_label_desc.text = mn_screen.ids.mn_left_tip_label_desc.text
+        self.ids.grd_left_ftr_tip_label_total.text = mn_screen.ids.mn_left_tip_txinput.text
+        self.ids.grd_left_ftr_grtotal_label_total.text = mn_screen.ids.mn_left_grtotal_label_price.text
+
     def change_color(self, instance):
         if instance.background_color == [0, 1, 0, 1]:
             instance.background_color = [1, 1, 1, 1]
@@ -284,60 +295,198 @@ class GridScreen(Screen):
 
         self.update_ftr_totals()
 
+    def grd_to_arr(self, Widget):
+		#assumes 'lr-tb' orientation
+        grd_lt = Widget
+        grd_arr = []
+        row_arr = []
+        start = len(grd_lt.children)
+        c = 0
+
+        if len(grd_lt.children) > grd_lt.cols:
+            is_multi = True
+        else:
+            is_multi = False
+
+        for i in range(start, 0, -1):
+            row_arr.append(grd_lt.children[i-1])
+            c += 1
+            if grd_lt.cols == c:
+                c = 0
+                if is_multi == True:
+                    grd_arr.append(row_arr)
+                    row_arr = []
+                else:
+                    grd_arr = row_arr	
+                    row_arr = []
+
+        return grd_arr
+
+    def get_left_ftr_arr(self):
+        ftr_bxlt = self.ids.grd_left_ftr_bxlt
+        ftr_arr = []
+
+        for i in range(len(ftr_bxlt.children), 0, -1):
+            row = []
+            bxlt = ftr_bxlt.children[i-1]
+            for j in range(len(bxlt.children), 0, -1):
+                row.append(bxlt.children[j-1])
+            ftr_arr.append(row)
+
+        return ftr_arr
+    
     def update_ftr_totals(self):
-        layout_right = self.ids.grd_right_scview_grdlt
-        layout_right_hdr = self.ids.grd_right_hdr_scview_grdlt
-        layout_right_ftr = self.ids.grd_right_ftr_scview_grdlt
-        layout_left = self.ids.grd_left_scview_grdlt
+        grd_right = self.grd_to_arr(self.ids.grd_right_scview_grdlt)
+        grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
+        grd_right_ftr = self.grd_to_arr(self.ids.grd_right_ftr_scview_grdlt)
+        
+        grd_left = self.grd_to_arr(self.ids.grd_left_scview_grdlt)
+        grd_left_ftr = self.get_left_ftr_arr()
 
-        size_col = len(layout_right_hdr.children)
-        size_row = 4
+        #Get factor
+        tax_factor = self.extract_number(self.ids.grd_left_ftr_tax_label_desc.text)
+        tax_factor = round(tax_factor/100,4)
+        tip_factor = self.extract_number(self.ids.grd_left_ftr_tip_label_desc.text)
+        tip_factor = round(tip_factor/100,4)
+
+        # print(f'Tax Factor: {tax_factor} | Tip Factor: {tip_factor}')
+
         #Person Totals
-        for j in range(size_col):
-
-            #Subtotals
+        for j in range(len(grd_right_hdr)):
+            #Sub Totals
             subtotal = 0.00
-            start = len(layout_right.children) - 1 - j
-            step = size_col*-1
-            for b in range(start,0,step):
-                btn = layout_right.children[b]
-                if btn.text.replace('.','').isnumeric():
-                    subtotal = round(subtotal + float(btn.text), 2)
+
+            for i in range(len(grd_right)):
+                item = grd_right[i][j]
+                if item.text.replace('.','').isnumeric():
+                    subtotal = round(subtotal + float(item.text), 2)
             
-            start = (len(layout_right_ftr.children)-1) - j
-            layout_right_ftr.children[start].text = f'{subtotal:.2f}'
+            label = grd_right_ftr[0][j]
+            label.text = f'{subtotal:.2f}'
 
-            #GrandTotal
-            grandtotal = 0.00
-            for i in range(3):
-                start = (len(layout_right_ftr.children)-1) - j
-                index = start + (step*i)
-                print(layout_right_ftr.children[index].text)
-                grandtotal = grandtotal + float(layout_right_ftr.children[index].text)
+            #Tax
+            row_tax = 1
+            tax = round(subtotal * tax_factor, 2)
+            label = grd_right_ftr[row_tax][j]
+            label.text = f'{tax:.2f}'
 
-            index = size_col - 1 - j
-            layout_right_ftr.children[index].text = f'{grandtotal:.2f}'
-        
-        
-        #Left Totals
-        label_totals = []
-        label_totals.append(self.ids.grd_left_ftr_sbtotal_label_bal)
-        label_totals.append(self.ids.grd_left_ftr_tax_label_bal)
-        label_totals.append(self.ids.grd_left_ftr_tip_label_bal)
-        label_totals.append(self.ids.grd_left_ftr_grtotal_label_bal)
-        
-        for i in range(size_row):
+            #Tip
+            row_tip = 2
+            tip = round(subtotal * tip_factor, 2)
+            label = grd_right_ftr[row_tip][j]
+            label.text = f'{tip:.2f}'
+            
+#Left Bottom Total called twice - need to update
+        #Left Bottom Totals
+        for i in range(len(grd_left_ftr)):
             total = 0.00
-            start = len(layout_right_ftr.children) - 1 - (size_col*i)
-            for p in range(start, start-size_col,-1):
-                label = layout_right_ftr.children[p]
-                total = total + float(label.text)
+            for j in range(len(grd_right_hdr)):
+                item = grd_right_ftr[i][j]
+                if item.text.replace('.','').isnumeric():
+                    total = round(total + float(item.text), 2)
+            label = grd_left_ftr[i][2]
+            label.text = f'{total:.2f}'
 
-            label_totals[i].text = f'{total:.2f}'
+        #Balance tax and tip totals
+        tax_total = float(self.ids.grd_left_ftr_tax_label_total.text)
+        tax_bal = float(self.ids.grd_left_ftr_tax_label_bal.text)
+        tip_total = float(self.ids.grd_left_ftr_tip_label_total.text)
+        tip_bal = float(self.ids.grd_left_ftr_tip_label_bal.text)
 
+        tax_arr = []
+        tax_obj = grd_right_ftr[row_tax]
+        for item in tax_obj:
+            tax_arr.append(float(item.text))
 
+        tip_arr = []
+        tip_obj = grd_right_ftr[row_tip]
+        for item in tip_obj:
+            tip_arr.append(float(item.text))
+			
+        size_col = len(grd_left[0])
+        qty_arr =[]
+        for i in range(len(grd_left)):
+            label = grd_left[i][size_col - 1]
+            qty_arr.append(label.text)
+            
+        is_full = True
+        for i in qty_arr:
+            if i == '0':
+                is_full = False
+                break
+        
+        if is_full == True:
+            tax_arr = self.balance_ftr_totals(tax_total, tax_bal, tax_arr)
+            for i in range(len(tax_obj)):
+                item = tax_obj[i]
+                item.text = f'{tax_arr[i]:.2f}'      
+            tip_arr = self.balance_ftr_totals(tip_total, tip_bal, tip_arr)
+            for i in range(len(tip_obj)):
+                item = tip_obj[i]
+                item.text = f'{tip_arr[i]:.2f}'
 
-                
+        
+        for j in range(len(grd_right_hdr)):
+            #Grand Totals
+            grandtotal = 0.00
+            for i in range(len(grd_right_ftr)-1):
+                item = grd_right_ftr[i][j]
+                if item.text.replace('.','').isnumeric():
+                    grandtotal = round(grandtotal + float(item.text), 2)
+            
+            label = grd_right_ftr[3][j]
+            label.text = f'{grandtotal:.2f}'
+
+        #Left Bottom Totals
+        for i in range(len(grd_left_ftr)):
+            total = 0.00
+            for j in range(len(grd_right_hdr)):
+                item = grd_right_ftr[i][j]
+                if item.text.replace('.','').isnumeric():
+                    total = round(total + float(item.text), 2)
+            label = grd_left_ftr[i][2]
+            label.text = f'{total:.2f}'
+        
+    def balance_ftr_totals(self, total, bal, arr):
+        remainder = round(total - bal, 2)
+        remainder = int(abs(remainder * 100))
+        #Tax balance
+        if bal < total:	
+            t = len(arr) - 1
+            while remainder != 0:
+                if arr[t] != 0:
+                    arr[t] = round(arr[t] + 0.01, 2)
+                    remainder -= 1
+                if t == 0:
+                    t = len(arr) - 1
+                else:
+                    t -= 1
+        elif bal > total:
+            t = 0
+            while remainder != 0:
+                if arr[t] != 0:
+                    arr[t] = round(arr[t] - 0.01, 2)
+                    remainder -= 1
+                if t == len(arr) - 1:
+                    t = 0
+                else:
+                    t += 1
+        return arr
+    def print_grd_arr(self, Widget):
+        layout = self.grd_to_arr(Widget)
+        for row in layout:
+            str_row = ""
+            for item in row:
+                str_row = str_row + " | " + item.text
+            print(str_row)
+            
+    def extract_number(self, str_val):
+        str_num = ''
+        for char in str_val:
+            if char.isdigit() or char =='.':
+                str_num += char
+        
+        return float(str_num) if str_num else None
 class CurrencyTextInput(TextInput):
     def on_text(self, inst6ance, value):
         value = value.replace('.','')
