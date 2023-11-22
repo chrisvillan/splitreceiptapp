@@ -12,6 +12,8 @@ from kivy.properties import StringProperty
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
 from kivy.config import Config
+from kivy.uix.popup import Popup
+from kivy.factory import Factory
 
 # To update for app deployment
 # buildozer -v android debug
@@ -25,7 +27,6 @@ class MainScreen(Screen):
         super(MainScreen, self).__init__(**kwargs)
         self.input_items = []
         self.input_persons= []
-        self.totals = {'subtotal':0.00, 'tax':0.00,'tip':0.00, 'grandtotal':0.00}
 
         window_width, window_height = Window.size
         self.height_item = window_height * 0.05
@@ -54,7 +55,30 @@ class MainScreen(Screen):
         data_grid.add_widget(txtinput_price)
 
         self.input_items.append([txtinput_item, txtinput_price])
+    
+    def add_item_left(self, text_item, text_price):
+        data_grid = self.ids.mn_left_scview_grdlt
         
+        txtinput_item = TextInput(text=text_item, size_hint=(1, None), height=self.height_item)
+        label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
+        txtinput_price = CurrencyTextInput(text=text_price, multiline=False, size_hint=(0.6, None), height=self.height_item)
+        txtinput_price.bind(text=self.update_totals)
+        
+        data_grid.add_widget(txtinput_item)
+        data_grid.add_widget(label_mid)
+        data_grid.add_widget(txtinput_price)
+
+        self.input_items.append([txtinput_item, txtinput_price])
+        self.update_totals(txtinput_price, txtinput_price.text)
+        
+    def add_to_left_popup(self):
+        popup = AddItemPopup(on_dismiss_callback=self.on_popup_dismiss, size_hint=(None, None), size=(400, 200))
+        popup.open()
+
+    def on_popup_dismiss(self, text_item, text_price):
+        print(f'Item: {text_item} | Price: {text_price}')
+        self.add_item_left(text_item, text_price)
+
     def add_to_left_preset(self):
         for i in range(10):
             self.add_to_left()
@@ -145,11 +169,6 @@ class MainScreen(Screen):
         self.ids.mn_left_tax_label_desc.text = f'Tax ({tax:.2f}%)'
         self.ids.mn_left_tip_label_desc.text = f'Tip ({tip:.2f}%)'
         self.ids.mn_left_grtotal_label_price.text = f'{grandtotal:.2f}'
-
-        self.totals['subtotal'] = subtotal
-        self.totals['tax'] = tax
-        self.totals['tip'] = tip
-        self.totals['grandtotal'] = grandtotal
         
 class GridScreen(Screen):
     def __init__(self, **kwargs):
@@ -159,7 +178,6 @@ class GridScreen(Screen):
 
     def on_enter(self):
         mn_screen = self.manager.get_screen("main_screen")
-        grd_screen = self.manager.get_screen("grid_screen")
 
         items = mn_screen.input_items
         persons = mn_screen.input_persons
@@ -294,46 +312,6 @@ class GridScreen(Screen):
                     btn.text = f'{btn_prices[i]:.2f}'  
 
         self.update_ftr_totals()
-
-    def grd_to_arr(self, Widget):
-		#assumes 'lr-tb' orientation
-        grd_lt = Widget
-        grd_arr = []
-        row_arr = []
-        start = len(grd_lt.children)
-        c = 0
-
-        if len(grd_lt.children) > grd_lt.cols:
-            is_multi = True
-        else:
-            is_multi = False
-
-        for i in range(start, 0, -1):
-            row_arr.append(grd_lt.children[i-1])
-            c += 1
-            if grd_lt.cols == c:
-                c = 0
-                if is_multi == True:
-                    grd_arr.append(row_arr)
-                    row_arr = []
-                else:
-                    grd_arr = row_arr	
-                    row_arr = []
-
-        return grd_arr
-
-    def get_left_ftr_arr(self):
-        ftr_bxlt = self.ids.grd_left_ftr_bxlt
-        ftr_arr = []
-
-        for i in range(len(ftr_bxlt.children), 0, -1):
-            row = []
-            bxlt = ftr_bxlt.children[i-1]
-            for j in range(len(bxlt.children), 0, -1):
-                row.append(bxlt.children[j-1])
-            ftr_arr.append(row)
-
-        return ftr_arr
     
     def update_ftr_totals(self):
         grd_right = self.grd_to_arr(self.ids.grd_right_scview_grdlt)
@@ -348,8 +326,6 @@ class GridScreen(Screen):
         tax_factor = round(tax_factor/100,4)
         tip_factor = self.extract_number(self.ids.grd_left_ftr_tip_label_desc.text)
         tip_factor = round(tip_factor/100,4)
-
-        # print(f'Tax Factor: {tax_factor} | Tip Factor: {tip_factor}')
 
         #Person Totals
         for j in range(len(grd_right_hdr)):
@@ -375,7 +351,7 @@ class GridScreen(Screen):
             tip = round(subtotal * tip_factor, 2)
             label = grd_right_ftr[row_tip][j]
             label.text = f'{tip:.2f}'
-            
+
 #Left Bottom Total called twice - need to update
         #Left Bottom Totals
         for i in range(len(grd_left_ftr)):
@@ -472,6 +448,46 @@ class GridScreen(Screen):
                 else:
                     t += 1
         return arr
+    def grd_to_arr(self, Widget):
+		#assumes 'lr-tb' orientation
+        grd_lt = Widget
+        grd_arr = []
+        row_arr = []
+        start = len(grd_lt.children)
+        c = 0
+
+        if len(grd_lt.children) > grd_lt.cols:
+            is_multi = True
+        else:
+            is_multi = False
+
+        for i in range(start, 0, -1):
+            row_arr.append(grd_lt.children[i-1])
+            c += 1
+            if grd_lt.cols == c:
+                c = 0
+                if is_multi == True:
+                    grd_arr.append(row_arr)
+                    row_arr = []
+                else:
+                    grd_arr = row_arr	
+                    row_arr = []
+
+        return grd_arr
+
+    def get_left_ftr_arr(self):
+        ftr_bxlt = self.ids.grd_left_ftr_bxlt
+        ftr_arr = []
+
+        for i in range(len(ftr_bxlt.children), 0, -1):
+            row = []
+            bxlt = ftr_bxlt.children[i-1]
+            for j in range(len(bxlt.children), 0, -1):
+                row.append(bxlt.children[j-1])
+            ftr_arr.append(row)
+
+        return ftr_arr
+    
     def print_grd_arr(self, Widget):
         layout = self.grd_to_arr(Widget)
         for row in layout:
@@ -487,6 +503,7 @@ class GridScreen(Screen):
                 str_num += char
         
         return float(str_num) if str_num else None
+    
 class CurrencyTextInput(TextInput):
     def on_text(self, inst6ance, value):
         value = value.replace('.','')
@@ -516,8 +533,41 @@ class CurrencyTextInput(TextInput):
         else:
             return super(CurrencyTextInput, self).insert_text('', from_undo)
 
+class AddItemPopup(Popup):
+    def __init__(self,on_dismiss_callback, **kwargs):
+        super(AddItemPopup, self).__init__(**kwargs)
+        self.on_dismiss_callback = on_dismiss_callback
+        self.title = 'Enter Text'
 
+        bxlt_top = BoxLayout(orientation='horizontal')
+        self.txtinput_item = TextInput(hint_text='Item Description', size_hint_x=0.6)
+        label = Label(text='$', font_size=24, size_hint_x=0.1)
+        self.txtinput_price = CurrencyTextInput(hint_text='0.00', multiline='False', size_hint_x=0.3)
+        bxlt_top.add_widget(self.txtinput_item)
+        bxlt_top.add_widget(label)
+        bxlt_top.add_widget(self.txtinput_price)
+
+
+        bxlt_bot = BoxLayout(orientation='horizontal')
+        btn_add = Button(text='Add Item', size_hint_x=0.8, on_press=self.dismiss_popup)
+        btn_cancel = Button(text='Cancel', size_hint_x=0.2, on_release=self.close_popup)
+        bxlt_bot.add_widget(btn_add)
+        bxlt_bot.add_widget(btn_cancel)
+
+        content_layout = BoxLayout(orientation='vertical')
+        content_layout.add_widget(bxlt_top)
+        content_layout.add_widget(bxlt_bot)
+
+        self.content = content_layout
+
+    def dismiss_popup(self, instance):
+        # Call the on_dismiss_callback and pass the entered text
+        self.on_dismiss_callback(self.txtinput_item.text, self.txtinput_price.text)
+        self.dismiss()
     
+    def close_popup(self, instance):
+        self.dismiss()
+
 class SplitReceipt(App):
     def build(self):
         

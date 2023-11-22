@@ -1,7 +1,8 @@
+#:import Factory kivy.factory.Factory
+
 ScreenManager:
     MainScreen:
     GridScreen:
-
 <MainScreen>:
     orientation: 'vertical'
     
@@ -105,7 +106,7 @@ ScreenManager:
                 Button:
                     id: mn_left_additem_btn
                     text: "Add Item"
-                    on_release: root.add_to_left_preset()
+                    on_release: root.add_to_left_popup()
                     size_hint_y: 0.07694
 
             #--- Right Layout
@@ -331,8 +332,3 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
-
-            
-
-                
-        
