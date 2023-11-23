@@ -31,35 +31,37 @@ class MainScreen(Screen):
         window_width, window_height = Window.size
         self.height_item = window_height * 0.05
         self.width_item = window_width * 0.18519
-
-    def add_to_right(self):
-        data_grid = self.ids.mn_right_scview_grdlt
-        height_item = self.height_item
-        txtinput_pers = TextInput(hint_text='Person', size_hint=(1, None), height=height_item)
-        txtinput_pers.background_color = [0.2,0.2,0.2,1]
-        txtinput_pers.foreground_color=[1,1,1,1]
-
-        data_grid.add_widget(txtinput_pers)
-        self.input_persons.append(txtinput_pers)
-
-    def add_to_left(self):
-        data_grid = self.ids.mn_left_scview_grdlt
         
-        txtinput_item = TextInput(hint_text='Item', size_hint=(1, None), height=self.height_item)
-        label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
-        txtinput_price = CurrencyTextInput(hint_text='Price', multiline=False, size_hint=(0.6, None), height=self.height_item)
-        txtinput_price.bind(text=self.update_totals)
+    def switch_to_grid_screen(self):
+        if len(self.input_items) >= 2 and len(self.input_persons) >=1:
+            self.manager.current = 'grid_screen'
+        else:
+            popup = WarningPopup(label_text='Please add more items/person\nMinimum of 2 items and 2 persons')
+            popup.open()
+    
+    def clear_left_items(self):
+        self.input_items = []
+        self.ids.mn_left_scview_grdlt.clear_widgets()
         
-        data_grid.add_widget(txtinput_item)
-        data_grid.add_widget(label_mid)
-        data_grid.add_widget(txtinput_price)
+    def clear_right_items(self):
+        self.input_persons= []
+        self.ids.mn_right_scview_grdlt.clear_widgets()
 
-        self.input_items.append([txtinput_item, txtinput_price])
+    def add_to_left_popup(self):
+        popup = AddItemPopup(on_dismiss_callback=self.additem_popup_dismiss)
+        popup.open()
+
+    def additem_popup_dismiss(self, text_item, text_price):
+        print(f'Item: {text_item} | Price: {text_price}')
+        if text_item != '' or text_price != '':
+            if text_price == '':
+                text_price ='0.00'
+            self.add_item_left(text_item, text_price)
     
     def add_item_left(self, text_item, text_price):
         data_grid = self.ids.mn_left_scview_grdlt
         
-        txtinput_item = TextInput(text=text_item, size_hint=(1, None), height=self.height_item)
+        txtinput_item = TextInput(text=text_item, multiline=False, size_hint=(1, None), height=self.height_item)
         label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
         txtinput_price = CurrencyTextInput(text=text_price, multiline=False, size_hint=(0.6, None), height=self.height_item)
         txtinput_price.bind(text=self.update_totals)
@@ -70,64 +72,41 @@ class MainScreen(Screen):
 
         self.input_items.append([txtinput_item, txtinput_price])
         self.update_totals(txtinput_price, txtinput_price.text)
-        
-    def add_to_left_popup(self):
-        popup = AddItemPopup(on_dismiss_callback=self.on_popup_dismiss, size_hint=(None, None), size=(400, 200))
+
+    def add_to_right_popup(self):
+        popup = AddPersonPopup(on_dismiss_callback=self.addperson_popup_dismiss)
         popup.open()
 
-    def on_popup_dismiss(self, text_item, text_price):
-        print(f'Item: {text_item} | Price: {text_price}')
-        self.add_item_left(text_item, text_price)
+    def addperson_popup_dismiss(self, text_person):
+        if text_person !='':
+            self.add_item_right(text_person)
+    
+    def add_item_right(self, text_person):
+        data_grid = self.ids.mn_right_scview_grdlt
+        height_item = self.height_item
+        txtinput_pers = TextInput(text= text_person, multiline=False, size_hint=(1, None), height=height_item)
+        txtinput_pers.background_color = [0.2,0.2,0.2,1]
+        txtinput_pers.foreground_color=[1,1,1,1]
 
-    def add_to_left_preset(self):
-        for i in range(10):
-            self.add_to_left()
-  
-        for i in range(10):
-            self.add_to_right()
+        data_grid.add_widget(txtinput_pers)
+        self.input_persons.append(txtinput_pers)
 
-        items = []
-        prices = []
-        for i in range(len(self.input_items)):
-            items.append(self.input_items[i][0])
-            prices.append(self.input_items[i][1])
+    def update_taxtip_popup(self):
+        taxtip_prices = []
+        taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
+        taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
+        popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
 
-        persons = self.input_persons
+        popup.open()    
 
-        for i in range(len(self.input_items)):
-            items[i].text = f'Item {i+1}'
-        
-        prices[0].text = "10.00"
-        prices[1].text = "10.00"
-        prices[2].text = "10.00"
-        prices[3].text = "10.00"
-        prices[4].text = "10.00"
-        prices[5].text = "10.00"
-        prices[6].text = "10.00"
-        prices[7].text = "10.00"
-        prices[8].text = "10.00"
-        prices[9].text = "10.00"
-
-        persons[0].text = "Alex"
-        persons[1].text = "Bob"
-        persons[2].text = "Clara"
-        persons[3].text = "Daniel"
-        persons[4].text = "Evelyn"
-        persons[5].text = "Frank"
-        persons[6].text = "Gabe"
-        persons[7].text = "Henry"
-        persons[8].text = "Iggy"
-        persons[9].text = "Jackie"
-
-        self.ids.mn_left_tax_txinput.text = '7.75'
-        self.ids.mn_left_tip_txinput.text = '15.00'
-
-    #Need this function in case tax/tip is entered before items are inputted
-    def update_taxtip(self):
-        tax_txtinput = self.ids.mn_left_tax_txinput
-        tip_txtinput = self.ids.mn_left_tip_txinput
-        tax_txtinput.bind(text=self.update_totals)
-        tip_txtinput.bind(text=self.update_totals)
+    def update_taxtip_popup_dismiss(self,tax_desc, tax_price, tip_desc, tip_price):
+        print(f'{tax_desc.text}: $ {tax_price.text}')
+        print(f'{tip_desc.text}: $ {tip_price.text}')
+        tax_btn = self.ids.mn_left_tax_txinput
+        tip_btn = self.ids.mn_left_tip_txinput
+        tax_btn.text = tax_price.text
+        tip_btn.text = tip_price.text
+        self.update_totals(self, tax_btn.text)
 
     def update_totals(self, instance, text):
         prices = []
@@ -522,6 +501,7 @@ class CurrencyTextInput(TextInput):
                 formatted_text = value
 
         # Updates the text and cursor position
+        self.multiline = False
         self.text = formatted_text
         Clock.schedule_once(partial(self.do_cursor_movement, 'cursor_end'))
     
@@ -537,10 +517,11 @@ class AddItemPopup(Popup):
     def __init__(self,on_dismiss_callback, **kwargs):
         super(AddItemPopup, self).__init__(**kwargs)
         self.on_dismiss_callback = on_dismiss_callback
-        self.title = 'Enter Text'
-
+        self.title = 'Add Item'
+        self.size_hint = (0.9, 0.2)
+        self.pos_hint = {"top": 0.7}
         bxlt_top = BoxLayout(orientation='horizontal')
-        self.txtinput_item = TextInput(hint_text='Item Description', size_hint_x=0.6)
+        self.txtinput_item = TextInput(hint_text='Item Description', size_hint_x=0.6, multiline=False)
         label = Label(text='$', font_size=24, size_hint_x=0.1)
         self.txtinput_price = CurrencyTextInput(hint_text='0.00', multiline='False', size_hint_x=0.3)
         bxlt_top.add_widget(self.txtinput_item)
@@ -554,7 +535,7 @@ class AddItemPopup(Popup):
         bxlt_bot.add_widget(btn_add)
         bxlt_bot.add_widget(btn_cancel)
 
-        content_layout = BoxLayout(orientation='vertical')
+        content_layout = BoxLayout(orientation='vertical',)
         content_layout.add_widget(bxlt_top)
         content_layout.add_widget(bxlt_bot)
 
@@ -567,6 +548,105 @@ class AddItemPopup(Popup):
     
     def close_popup(self, instance):
         self.dismiss()
+
+class TaxTipPopup(Popup):
+    def __init__(self,on_dismiss_callback, prices, **kwargs):
+        super(TaxTipPopup, self).__init__(**kwargs)
+        self.on_dismiss_callback = on_dismiss_callback
+        self.prices = prices
+        self.title = 'Tax & Tip'
+        self.size_hint = (0.9, 0.3)
+        self.pos_hint = {"top": 0.7}
+        bxlt_top = BoxLayout(orientation='horizontal')
+        self.label_tax_desc = Label(text='Tax', size_hint_x=0.3)
+        label = Label(text='$', font_size=24, size_hint_x=0.1)
+        self.label_tax_price = CurrencyTextInput(text=self.prices[0], multiline='False', size_hint_x=0.6)
+        bxlt_top.add_widget(self.label_tax_desc)
+        bxlt_top.add_widget(label)
+        bxlt_top.add_widget(self.label_tax_price)
+
+        bxlt_mid = BoxLayout(orientation='horizontal')
+        self.label_tip_desc = Label(text='Tip', size_hint_x=0.3)
+        label = Label(text='$', font_size=24, size_hint_x=0.1)
+        self.label_tip_price = CurrencyTextInput(text=self.prices[1], multiline='False', size_hint_x=0.6)
+        bxlt_mid.add_widget(self.label_tip_desc)
+        bxlt_mid.add_widget(label)
+        bxlt_mid.add_widget(self.label_tip_price)
+
+
+        bxlt_bot = BoxLayout(orientation='horizontal')
+        btn_update = Button(text='Update', size_hint_x=0.8, on_press=self.dismiss_popup)
+        btn_cancel = Button(text='Cancel', size_hint_x=0.2, on_release=self.close_popup)
+        bxlt_bot.add_widget(btn_update)
+        bxlt_bot.add_widget(btn_cancel)
+
+        content_layout = BoxLayout(orientation='vertical',)
+        content_layout.add_widget(bxlt_top)
+        content_layout.add_widget(bxlt_mid)
+        content_layout.add_widget(bxlt_bot)
+
+        self.content = content_layout
+
+    def dismiss_popup(self, instance):
+        tax_desc = self.label_tax_desc
+        tax_price = self.label_tax_price
+        tip_desc = self.label_tip_desc
+        tip_price = self.label_tip_price
+        self.on_dismiss_callback(tax_desc, tax_price, tip_desc, tip_price)
+        self.dismiss()
+
+    def close_popup(self, instance):
+        self.dismiss()
+
+class AddPersonPopup(Popup):
+    def __init__(self,on_dismiss_callback, **kwargs):
+        super(AddPersonPopup, self).__init__(**kwargs)
+        self.on_dismiss_callback = on_dismiss_callback
+        self.title = 'Add Person'
+        self.size_hint = (0.7, 0.2)
+        self.pos_hint = {"top": 0.7}
+        bxlt_top = BoxLayout(orientation='vertical')
+        self.txtinput_person = TextInput(hint_text='Person',multiline=False)
+        bxlt_top.add_widget(self.txtinput_person)
+
+        bxlt_bot = BoxLayout(orientation='horizontal')
+        btn_add = Button(text='Add Person', size_hint_x=0.7, on_press=self.dismiss_popup)
+        btn_cancel = Button(text='Cancel', size_hint_x=0.3, on_release=self.close_popup)
+        bxlt_bot.add_widget(btn_add)
+        bxlt_bot.add_widget(btn_cancel)
+
+        content_layout = BoxLayout(orientation='vertical',)
+        content_layout.add_widget(bxlt_top)
+        content_layout.add_widget(bxlt_bot)
+
+        self.content = content_layout
+
+    def dismiss_popup(self, instance):
+        # Call the on_dismiss_callback and pass the entered text
+        self.on_dismiss_callback(self.txtinput_person.text)
+        self.dismiss()
+    
+    def close_popup(self, instance):
+        self.dismiss()
+
+class WarningPopup(Popup):
+    def __init__(self, label_text, **kwargs):
+        super(WarningPopup, self).__init__(**kwargs)
+        self.title = 'Warning'
+        self.size_hint = (0.7, 0.2)
+        self.pos_hint = {"top": 0.7}
+        
+        bxlt = BoxLayout(orientation='vertical')
+        label = Label(text=label_text)
+        btn = Button(text='Okay', on_press=self.dismiss)
+        
+        bxlt.add_widget(label)
+        bxlt.add_widget(btn)
+
+        content_layout = BoxLayout(orientation='vertical',)
+        content_layout.add_widget(bxlt)
+
+        self.content = content_layout
 
 class SplitReceipt(App):
     def build(self):
