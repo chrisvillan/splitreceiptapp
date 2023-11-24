@@ -10,7 +10,7 @@ ScreenManager:
     BoxLayout:
         id: mn_bxlt
         orientation: 'vertical'
-        
+
         #--- Go to GridScreen
         Button:
             id: to_grscreen_btn
@@ -29,6 +29,8 @@ ScreenManager:
                 id: mn_left_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.6
+                spacing: 10
+                padding: 10
 
                 #--- Left Scrollview 
                 ScrollView:
@@ -52,7 +54,7 @@ ScreenManager:
                     Label:
                         id: mn_left_sbtotal_label_desc
                         text: "Sub Total: $"
-                
+
                     Label:
                         id: mn_left_sbtotal_label_price
                         text: "0.00"
@@ -66,11 +68,11 @@ ScreenManager:
                     Label:
                         id: mn_left_tax_label_desc
                         text: "Tax $:"
-                        
+
                     Button:
                         id: mn_left_tax_txinput
                         text: "0.00"
-                        on_release: root.update_taxtip_popup()
+                        on_release: root.update_tax_popup()
                         
                 #--- Tip row
                 BoxLayout:
@@ -85,7 +87,7 @@ ScreenManager:
                     Button:
                         id: mn_left_tip_txinput
                         text: "0.00"
-                        on_release: root.update_taxtip_popup()
+                        on_release: root.update_tip_popup()
                         
                 #--- Grand Total row
                 BoxLayout:
@@ -105,7 +107,7 @@ ScreenManager:
                 Button:
                     id: mn_left_additem_btn
                     text: "Add Item"
-                    on_release: root.add_to_left_popup()
+                    on_release: root.additem_popup()
                     size_hint_y: 0.1
                 
                 Button:
@@ -119,6 +121,8 @@ ScreenManager:
                 id: mn_right_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.4
+                spacing: 10
+                padding: 10
 
                 ScrollView:
                     id: mn_right_scview
@@ -135,7 +139,7 @@ ScreenManager:
                 Button:
                     id: mn_right_addprsn_btn
                     text: "Add Person"
-                    on_release: root.add_to_right_popup()
+                    on_release: root.addperson_popup()
                     size_hint_y: 0.1
 
                 Button:
@@ -342,3 +346,4 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
+
