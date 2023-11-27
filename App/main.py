@@ -17,6 +17,10 @@ from kivy.factory import Factory
 from kivy.core.text import Label as CoreLabel
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.image import Image
+from kivy.graphics import Rectangle, Color, BoxShadow, RoundedRectangle, Ellipse
+
+from kivy.lang import Builder
+
 import os
 import sys
 
@@ -27,16 +31,16 @@ import sys
 # Config.write()
 # print("WindowSize: " + str(Window.size))
 
+
 class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         self.input_items = []
         self.input_persons= []
-
         window_width, window_height = Window.size
         self.height_item = window_height * 0.05
         self.width_item = window_width * 0.18519
-        
+
     def switch_to_grid_screen(self):
         if len(self.input_items) >= 2 and len(self.input_persons) >=2:
             self.manager.current = 'grid_screen'
@@ -64,16 +68,29 @@ class MainScreen(Screen):
     
     def additem_left(self, text_item, text_price):
         data_grid = self.ids.mn_left_scview_grdlt
+        bxlt = MyBoxLayout(orientation='horizontal',size_hint=(1, None), height=self.height_item)
         
         txtinput_item = ItemTextInput(multiline=False, size_hint=(1, None), height=self.height_item)
+        txtinput_item.background_color = 0,0,0,0
+        txtinput_item.foreground_color = 1,1,1,1
         txtinput_item.text = text_item
         label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
+        label_mid.color = 1,1,1,1
         txtinput_price = CurrencyTextInput(multiline=False, size_hint=(0.6, None), height=self.height_item)
+        txtinput_price.background_color = 0,0,0,0
+        txtinput_price.foreground_color = 1,1,1,1
         txtinput_price.text = text_price
         txtinput_price.bind(text=self.update_totals)
-        data_grid.add_widget(txtinput_item)
-        data_grid.add_widget(label_mid)
-        data_grid.add_widget(txtinput_price)
+
+        bxlt.add_widget(txtinput_item)
+        bxlt.add_widget(label_mid)
+        bxlt.add_widget(txtinput_price)
+
+        data_grid.add_widget(bxlt)
+        # data_grid.add_widget(txtinput_item)
+        # data_grid.add_widget(bxlt)
+        # data_grid.add_widget(txtinput_price)
+        
 
         self.input_items.append([txtinput_item, txtinput_price])
         self.update_totals(txtinput_price, txtinput_price.text)
@@ -89,12 +106,14 @@ class MainScreen(Screen):
     def addperson_right(self, text_person):
         data_grid = self.ids.mn_right_scview_grdlt
         height_item = self.height_item
+        bxlt = MyBoxLayout(orientation='horizontal',size_hint=(1, None), height=self.height_item)
         txtinput_pers = PersonTextInput(size_hint=(1, None), height=height_item)
         txtinput_pers.text = text_person
-        txtinput_pers.background_color = [0.2,0.2,0.2,1]
+        txtinput_pers.background_color = [0,0,0,0]
         txtinput_pers.foreground_color=[1,1,1,1]
 
-        data_grid.add_widget(txtinput_pers)
+        bxlt.add_widget(txtinput_pers)
+        data_grid.add_widget(bxlt)
         self.input_persons.append(txtinput_pers)
 
     def update_tax_popup(self):
@@ -109,6 +128,7 @@ class MainScreen(Screen):
         taxtip_prices = []
         taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
         taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
+        print(taxtip_prices)
         popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
         popup.txtinput_tip_price.focus = True
         popup.open() 
@@ -506,13 +526,31 @@ class GridScreen(Screen):
 
     def update_label_size(self, Label):
         pass
+
+class MyBoxLayout(BoxLayout):
+    def __init__(self, **kwargs):
+        super(MyBoxLayout, self).__init__(**kwargs)
+        with self.canvas.before:
+            Color(0,0,0,0.3)
+            self.shadow = BoxShadow(pos=[0,0],size=self.size,offset=(0,-10),spread_radius=(-10,-10),border_radius=(10,10,10,10),blur_radius=20)
+            Color(1, 1, 1, 1)
+            self.roundrect = RoundedRectangle(source='imgs/layout_color_1.png', pos=[0,0], size=self.size, radius=[10])
+
+        self.bind(pos=self.update_shadow, size=self.update_shadow)
+
+    def update_shadow(self,*args):
+        self.shadow.pos = self.pos
+        self.roundrect.pos = self.pos
+        self.shadow.size = self.size
+        self.roundrect.size = self.size
+
 class PersonTextInput(TextInput):
     def __init__(self, **kwargs):
         super(PersonTextInput, self).__init__(**kwargs)
         self.multiline = False
         self.halign = 'center'
         self.hint_text = 'Person'
-
+        
         #Adjust font size
         curr_font_size = self.font_size
         max_text = 'AAAAAAAAAA'
@@ -543,7 +581,7 @@ class ItemTextInput(TextInput):
         label.size = label.texture_size
         
         #Adjust Padding
-        print(f'Height: {self.height} | Line Height: {self.line_height}')
+        # print(f'Height: {self.height} | Line Height: {self.line_height}')
         padding_top = (self.height - label.height)/2
         self.padding = [self.padding[0], padding_top, self.padding[2], 0]
         self.text =''
@@ -611,6 +649,8 @@ class AddItemPopup(Popup):
     def __init__(self,on_dismiss_callback, **kwargs):
         super(AddItemPopup, self).__init__(**kwargs)
         self.on_dismiss_callback = on_dismiss_callback
+        # self.background = ''
+        # self.background_color = (1,1,1,1)
         self.title = 'Add Item'
         self.size_hint = (0.9, 0.2)
         self.pos_hint = {"top": 0.7}
@@ -666,7 +706,7 @@ class TaxTipPopup(Popup):
         self.label_tip_desc = Label(text='Tip', size_hint_x=0.3)
         label = Label(text='$', font_size=24, size_hint_x=0.1)
         self.txtinput_tip_price = CurrencyTextInput(size_hint_x=0.6)
-        self.txtinput_tip_price.text=self.prices[1],
+        self.txtinput_tip_price.text=self.prices[1]
         bxlt_mid.add_widget(self.label_tip_desc)
         bxlt_mid.add_widget(label)
         bxlt_mid.add_widget(self.txtinput_tip_price)
@@ -749,7 +789,6 @@ class WarningPopup(Popup):
 
 class SplitReceipt(App):
     def build(self):
-        
         sm = ScreenManager()
         main_screen = MainScreen(name='main_screen')
         grid_screen = GridScreen(name='grid_screen')

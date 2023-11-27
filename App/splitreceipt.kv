@@ -6,117 +6,158 @@ ScreenManager:
 <MainScreen>:
     orientation: 'vertical'
     
-    #--- Whole screen
+
+    # Whole screen
     BoxLayout:
         id: mn_bxlt
         orientation: 'vertical'
-
-        #--- Go to GridScreen
-        Button:
+        padding: 10
+        canvas.before:
+            Color:
+                rgba: (61/255,71/255,106/255,1)
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        # Go to GridScreen
+        TopButton:
             id: to_grscreen_btn
             text: "Go to Grid Screen"
             on_release: root.switch_to_grid_screen()
             size_hint_y: 0.1
+            color: 1,1,1,1
+            font_size: 20
 
-        #--- Below button
+        # Below button
         BoxLayout:
             id: mn_sub_bxlt
             orientation: 'horizontal'
             size_hint_y: 0.9
-
-            #--- Left layout
+            
+            # Left layout
             BoxLayout:
                 id: mn_left_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.6
                 spacing: 10
                 padding: 10
-
-                #--- Left Scrollview 
+                
+                # Left Scrollview 
                 ScrollView:
                     id: mn_left_scview
                     do_scroll_y: True
                     size_hint_y: 0.6
-
+    
                     GridLayout:
                         id: mn_left_scview_grdlt
-                        cols: 3
+                        cols: 1
                         orientation: 'lr-tb'
                         size_hint_y: None
                         height: self.minimum_height
-
-                #--- Subtotal row
+                        spacing: 5
                 BoxLayout:
-                    id: mn_left_sbtotal_bxlt
-                    orienation: 'horizontal'
-                    size_hint_y: 0.05
-
-                    Label:
-                        id: mn_left_sbtotal_label_desc
-                        text: "Sub Total: $"
-
-                    Label:
-                        id: mn_left_sbtotal_label_price
-                        text: "0.00"
-
-                #--- Tax row
-                BoxLayout:
-                    id: mn_left_sbtotal_bxlt
-                    size_hint_y: 0.05
-                    orientation: 'horizontal'
-
-                    Label:
-                        id: mn_left_tax_label_desc
-                        text: "Tax $:"
-
-                    Button:
-                        id: mn_left_tax_txinput
-                        text: "0.00"
-                        on_release: root.update_tax_popup()
-                        
-                #--- Tip row
-                BoxLayout:
-                    id: mn_left_tip_bxlt
-                    orientation: 'horizontal'
-                    size_hint_y: 0.05
+                    orientation: 'vertical'
+                    size_hint_y: 0.2
+                    spacing: 5
+                    padding: 5
+                    background_color: (0,0,0,0)
+                    background_normal: ''
                     
-                    Label:
-                        id: mn_left_tip_label_desc
-                        text: "Tip $:"
-
-                    Button:
-                        id: mn_left_tip_txinput
-                        text: "0.00"
-                        on_release: root.update_tip_popup()
+                    canvas.before:
+                        Color:
+                            rgba: 0,0,0,0.3
+                        BoxShadow:
+                            pos: self.pos
+                            size: self.size
+                            offset: 10,-10
+                            spread_radius: -10,-10
+                            border_radius: 10,10,10,10
+                            blur_radius: 80
+                        Color:
+                            rgba: 1,1,1,1
+                        RoundedRectangle:
+                            source: 'imgs/layout_color_1.png'
+                            pos: self.pos
+                            size: self.size
+                            radius: [20]
                         
-                #--- Grand Total row
-                BoxLayout:
-                    id: mn_left_grtotal_bxlt
-                    orientation: 'horizontal'
-                    size_hint_y: 0.05
+                    # Subtotal row
+                    BoxLayout:
+                        id: mn_left_sbtotal_bxlt
+                        orienation: 'horizontal'
+                        size_hint_y: 1
 
-                    Label:
-                        id: mn_left_grtotal_label_desc
-                        text: "Grand Total: $"
+                        WhiteLabel:
+                            id: mn_left_sbtotal_label_desc
+                            text: "Sub Total: $"
 
-                    Label:
-                        id: mn_left_grtotal_label_price
-                        text: "0.00"
+                        WhiteLabel:
+                            id: mn_left_sbtotal_label_price
+                            text: "0.00"
 
-                #--- Add Item row
-                Button:
+                    # Tax row
+                    BoxLayout:
+                        id: mn_left_sbtotal_bxlt
+                        size_hint_y: 1
+                        orientation: 'horizontal'
+
+                        WhiteLabel:
+                            id: mn_left_tax_label_desc
+                            text: "Tax $:"
+
+                        SmallButton:
+                            id: mn_left_tax_txinput
+                            text: "0.00"
+                            on_release: root.update_tax_popup()
+                            
+                    # Tip row
+                    BoxLayout:
+                        id: mn_left_tip_bxlt
+                        orientation: 'horizontal'
+                        size_hint_y: 1
+                        
+                        WhiteLabel:
+                            id: mn_left_tip_label_desc
+                            text: "Tip $:"
+
+                        SmallButton:
+                            id: mn_left_tip_txinput
+                            text: "0.00"
+                            on_release: root.update_tip_popup()
+                            
+                    # Grand Total row
+                    BoxLayout:
+                        id: mn_left_grtotal_bxlt
+                        orientation: 'horizontal'
+                        size_hint_y: 1
+
+                        WhiteLabel:
+                            id: mn_left_grtotal_label_desc
+                            text: "Grand Total: $"
+
+                        WhiteLabel:
+                            id: mn_left_grtotal_label_price
+                            text: "0.00"
+
+                # Add Item row
+                BigButton:
                     id: mn_left_additem_btn
                     text: "Add Item"
                     on_release: root.additem_popup()
                     size_hint_y: 0.1
-                
-                Button:
+                    color: 1,1,1,1
+                    
+                    font_size: 20
+
+                BigButton:
                     id: mn_left_clear_btn
                     text: "Clear Items"
                     on_release: root.clear_left_items()
                     size_hint_y: 0.1
+                    color: 1,1,1,1
+                    
+                    font_size: 20
 
-            #--- Right Layout
+            # Right Layout
             BoxLayout:
                 id: mn_right_bxlt
                 orientation: 'vertical'
@@ -135,45 +176,51 @@ ScreenManager:
                         orientation: 'tb-lr'
                         size_hint_y: None
                         height: self.minimum_height
-
-                Button:
+                        spacing: 5
+                BigButton:
                     id: mn_right_addprsn_btn
                     text: "Add Person"
                     on_release: root.addperson_popup()
                     size_hint_y: 0.1
+                    color: 1,1,1,1
+                    
+                    font_size: 20
 
-                Button:
+                BigButton:
                     id: mn_right_clear_btn
                     text: "Clear Persons"
                     on_release: root.clear_right_items()
                     size_hint_y: 0.1
+                    color: 1,1,1,1
+                    
+                    font_size: 20
 <GridScreen>:
     orientation: 'vertical'
 
-    #--- Whole Screen
+    # Whole Screen
     BoxLayout:
         id: grd_bxlt
         orientation: 'vertical'
         
-        #---Go to MainScreen
+        #Go to MainScreen
         Button:
             id: to_mnscreen_btn
             text: "Go to Main Screen"
             on_release: app.root.current = "main_screen"
             size_hint_y: 0.11111
 
-        #--- Below button
+        # Below button
         BoxLayout:
             id: grd_sub_bxlt
             orientation: 'horizontal'
 
-            #--- Left Layout
+            # Left Layout
             BoxLayout:
                 id: grd_left_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.5
 
-                #--- Left Header
+                # Left Header
                 GridLayout:
                     id: grd_left_hdr_grdlt
                     cols: 3
@@ -192,7 +239,7 @@ ScreenManager:
                         text: 'Qty'
                         size_hint_x: 0.25
 
-                #--- Left Scroll
+                # Left Scroll
                 ScrollView:
                     id: grd_left_scview
                     grd_right_scview: grd_right_scview
@@ -208,13 +255,13 @@ ScreenManager:
                         orientation: 'lr-tb'
                         height: self.minimum_height
 
-                #--- Bottom Layout
+                # Bottom Layout
                 BoxLayout:
                     id: grd_left_ftr_bxlt
                     orientation: 'vertical'
                     size_hint_y: 0.3076
 
-                    #--- Sub Total 
+                    # Sub Total 
                     BoxLayout:
                         id: grd_left_ftr_sbtotal_bxlt
                         orientation: 'horizontal'
@@ -232,7 +279,7 @@ ScreenManager:
                             text: "0.00"
                             size_hint_x: 0.25
 
-                    #--- Tax 
+                    # Tax 
                     BoxLayout:
                         id: grd_left_ftr_tax_bxlt
                         orientation: 'horizontal'
@@ -250,7 +297,7 @@ ScreenManager:
                             text: "0.00"
                             size_hint_x: 0.25
 
-                    #--- Tip 
+                    # Tip 
                     BoxLayout:
                         id: grd_left_ftr_tip_bxlt
                         orientation: 'horizontal'
@@ -268,7 +315,7 @@ ScreenManager:
                             text: "0.00"
                             size_hint_x: 0.25
 
-                    #--- Grand Total 
+                    # Grand Total 
                     BoxLayout:
                         id: grd_left_ftr_grtotal_bxlt
                         orientation: 'horizontal'
@@ -286,12 +333,12 @@ ScreenManager:
                             text: "0.00"
                             size_hint_x: 0.25
 
-            #--- Right Layout   
+            # Right Layout   
             BoxLayout:
                 id: grd_right_bxlt
                 orientation: 'vertical'
                 size_hint_x: 0.5
-                #--- Header 
+                # Header 
                 ScrollView:
                     id: grd_right_hdr_scview
                     grd_right_scview: grd_right_scview
@@ -309,7 +356,7 @@ ScreenManager:
                         height: self.minimum_height
                         width: self.minimum_width
 
-                #--- Mid Scrollview GridLayout 
+                # Mid Scrollview GridLayout 
                 ScrollView:
                     id: grd_right_scview
                     grd_left_scview: grd_left_scview
@@ -328,7 +375,7 @@ ScreenManager:
                         height: self.minimum_height
                         width: self.minimum_width
 
-                #--- Footer 
+                # Footer 
                 ScrollView:
                     id: grd_right_ftr_scview
                     grd_right_scview: grd_right_scview
@@ -347,3 +394,83 @@ ScreenManager:
                         height: self.minimum_height
                         width: self.minimum_width
 
+<Label>:
+    color: 0,0,0,1
+    
+
+<WhiteLabel@Label>:
+    color: 1,1,1,1
+    
+<TopButton@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        Color:
+            rgba: 0,0,0,0.3
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            blur_radius: 25
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+            blur_radius: 80
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/btn_color_1.png'
+            pos: self.pos
+            size: self.size
+            radius: [20]
+
+    
+<BigButton@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        # BoxShadow 
+        Color:
+            rgba: 0,0,0,0.3
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            blur_radius: 25
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+        
+        # Round 
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/btn_color_2.png'
+            pos: self.pos
+            size: self.size
+            radius: [20]
+
+<SmallButton@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        # BoxShadow 
+        Color:
+            rgba: 0,0,0,0.2
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            blur_radius: 25
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+        
+        # Round 
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/btn_color_3.png'
+            pos: self.pos
+            size: self.size
+            radius: [20]
