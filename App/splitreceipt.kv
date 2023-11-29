@@ -19,13 +19,12 @@ ScreenManager:
                 pos: self.pos
                 size: self.size
         # Go to GridScreen
-        TopButton:
+        ButtonType3:
             id: to_grscreen_btn
             text: "Go to Grid Screen"
             on_release: root.switch_to_grid_screen()
             size_hint_y: 0.1
             color: 1,1,1,1
-            font_size: 20
 
         # Below button
         BoxLayout:
@@ -37,7 +36,7 @@ ScreenManager:
             BoxLayout:
                 id: mn_left_bxlt
                 orientation: 'vertical'
-                size_hint_x: 0.6
+                size_hint_x: 0.7
                 spacing: 10
                 padding: 10
                 
@@ -54,31 +53,11 @@ ScreenManager:
                         size_hint_y: None
                         height: self.minimum_height
                         spacing: 5
-                BoxLayout:
+                BoxLayoutType1:
                     orientation: 'vertical'
                     size_hint_y: 0.2
                     spacing: 5
                     padding: 5
-                    background_color: (0,0,0,0)
-                    background_normal: ''
-                    
-                    canvas.before:
-                        Color:
-                            rgba: 0,0,0,0.3
-                        BoxShadow:
-                            pos: self.pos
-                            size: self.size
-                            offset: 10,-10
-                            spread_radius: -10,-10
-                            border_radius: 10,10,10,10
-                            blur_radius: 80
-                        Color:
-                            rgba: 1,1,1,1
-                        RoundedRectangle:
-                            source: 'imgs/layout_color_1.png'
-                            pos: self.pos
-                            size: self.size
-                            radius: [20]
                         
                     # Subtotal row
                     BoxLayout:
@@ -104,7 +83,7 @@ ScreenManager:
                             id: mn_left_tax_label_desc
                             text: "Tax $:"
 
-                        SmallButton:
+                        ButtonType1:
                             id: mn_left_tax_txinput
                             text: "0.00"
                             on_release: root.update_tax_popup()
@@ -119,7 +98,7 @@ ScreenManager:
                             id: mn_left_tip_label_desc
                             text: "Tip $:"
 
-                        SmallButton:
+                        ButtonType1:
                             id: mn_left_tip_txinput
                             text: "0.00"
                             on_release: root.update_tip_popup()
@@ -139,29 +118,25 @@ ScreenManager:
                             text: "0.00"
 
                 # Add Item row
-                BigButton:
+                ButtonType2:
                     id: mn_left_additem_btn
                     text: "Add Item"
                     on_release: root.additem_popup()
                     size_hint_y: 0.1
                     color: 1,1,1,1
-                    
-                    font_size: 20
 
-                BigButton:
+                ButtonType2:
                     id: mn_left_clear_btn
                     text: "Clear Items"
-                    on_release: root.clear_left_items()
+                    on_release: root.clear_left_items_popup()
                     size_hint_y: 0.1
                     color: 1,1,1,1
-                    
-                    font_size: 20
 
             # Right Layout
             BoxLayout:
                 id: mn_right_bxlt
                 orientation: 'vertical'
-                size_hint_x: 0.4
+                size_hint_x: 0.3
                 spacing: 10
                 padding: 10
 
@@ -177,23 +152,22 @@ ScreenManager:
                         size_hint_y: None
                         height: self.minimum_height
                         spacing: 5
-                BigButton:
+                ButtonType2:
                     id: mn_right_addprsn_btn
                     text: "Add Person"
                     on_release: root.addperson_popup()
                     size_hint_y: 0.1
                     color: 1,1,1,1
-                    
-                    font_size: 20
 
-                BigButton:
+                ButtonType2:
                     id: mn_right_clear_btn
-                    text: "Clear Persons"
-                    on_release: root.clear_right_items()
+                    #text: "Clear Persons" 
+                    #on_release: root.clear_right_items_popup() 
+
+                    text: "Add Preset"
+                    on_release: root.add_preset()
                     size_hint_y: 0.1
                     color: 1,1,1,1
-                    
-                    font_size: 20
 <GridScreen>:
     orientation: 'vertical'
 
@@ -201,12 +175,21 @@ ScreenManager:
     BoxLayout:
         id: grd_bxlt
         orientation: 'vertical'
-        
+        padding: 10
+        canvas.before:
+            Color:
+                rgba: (61/255,71/255,106/255,1)
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         #Go to MainScreen
-        Button:
+        ButtonType3:
             id: to_mnscreen_btn
             text: "Go to Main Screen"
-            on_release: app.root.current = "main_screen"
+            on_release: 
+                root.manager.transition.direction = "right"
+                app.root.current = "main_screen"
             size_hint_y: 0.11111
 
         # Below button
@@ -395,19 +378,20 @@ ScreenManager:
                         width: self.minimum_width
 
 <Label>:
-    color: 0,0,0,1
+    color: 1,1,1,1
     
 
 <WhiteLabel@Label>:
     color: 1,1,1,1
-    
-<TopButton@Button>:
+
+<ButtonType1@Button>:
     background_color: (0,0,0,0)
     background_normal: ''
     
     canvas.before:
+        # BoxShadow 
         Color:
-            rgba: 0,0,0,0.3
+            rgba: 0,0,0,0.2
         BoxShadow:
             pos: self.pos
             size: self.size
@@ -415,17 +399,17 @@ ScreenManager:
             blur_radius: 25
             spread_radius: -10,-10
             border_radius: 10,10,10,10
-            blur_radius: 80
+        
+        # Round 
         Color:
             rgba: 1,1,1,1
         RoundedRectangle:
-            source: 'imgs/btn_color_1.png'
+            source: 'imgs/btn_color_3.png'
             pos: self.pos
             size: self.size
             radius: [20]
 
-    
-<BigButton@Button>:
+<ButtonType2@Button>:
     background_color: (0,0,0,0)
     background_normal: ''
     
@@ -450,14 +434,13 @@ ScreenManager:
             size: self.size
             radius: [20]
 
-<SmallButton@Button>:
+<ButtonType3@Button>:
     background_color: (0,0,0,0)
     background_normal: ''
     
     canvas.before:
-        # BoxShadow 
         Color:
-            rgba: 0,0,0,0.2
+            rgba: 0,0,0,0.3
         BoxShadow:
             pos: self.pos
             size: self.size
@@ -465,12 +448,33 @@ ScreenManager:
             blur_radius: 25
             spread_radius: -10,-10
             border_radius: 10,10,10,10
-        
-        # Round 
+            blur_radius: 80
         Color:
             rgba: 1,1,1,1
         RoundedRectangle:
-            source: 'imgs/btn_color_3.png'
+            source: 'imgs/btn_color_1.png'
+            pos: self.pos
+            size: self.size
+            radius: [20]
+
+<BoxLayoutType1@BoxLayout>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        Color:
+            rgba: 0,0,0,0.3
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+            blur_radius: 80
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/layout_color_1.png'
             pos: self.pos
             size: self.size
             radius: [20]
