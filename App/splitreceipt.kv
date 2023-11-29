@@ -45,7 +45,8 @@ ScreenManager:
                     id: mn_left_scview
                     do_scroll_y: True
                     size_hint_y: 0.6
-    
+                    effect_cls: 'ScrollEffect'
+
                     GridLayout:
                         id: mn_left_scview_grdlt
                         cols: 1
@@ -144,7 +145,8 @@ ScreenManager:
                     id: mn_right_scview
                     do_scroll_y: True
                     size_hint_y: 0.8
-
+                    effect_cls: 'ScrollEffect'
+                    
                     GridLayout:
                         id: mn_right_scview_grdlt
                         cols: 1
@@ -207,8 +209,9 @@ ScreenManager:
                 GridLayout:
                     id: grd_left_hdr_grdlt
                     cols: 3
-                    size_hint_y: 0.0769
-
+                    size_hint_y: 0.075
+                    spacing: 10
+                    padding: 0,10,0,10
                     Label:
                         id: grd_left_hdr_label_desc
                         text: 'Item'
@@ -229,7 +232,8 @@ ScreenManager:
 
                     do_scroll_y: True
                     scroll_y: self.grd_right_scview.scroll_y
-                    size_hint_y: 1
+                    size_hint_y: 0.7
+                    effect_cls: 'ScrollEffect'
 
                     GridLayout:
                         id: grd_left_scview_grdlt
@@ -243,13 +247,16 @@ ScreenManager:
                 BoxLayout:
                     id: grd_left_ftr_bxlt
                     orientation: 'vertical'
-                    size_hint_y: 0.3076
+                    size_hint_y: 0.225
+                    spacing: 10
+                    padding: 0,10,0,10
 
                     # Sub Total 
                     BoxLayout:
                         id: grd_left_ftr_sbtotal_bxlt
                         orientation: 'horizontal'
-                        
+                        padding: 0,0,10,0
+
                         Label:
                             id: grd_left_ftr_sbtotal_label_desc
                             text: "Sub Total"
@@ -258,17 +265,24 @@ ScreenManager:
                             id: grd_left_ftr_sbtotal_label_total
                             text: "0.00"
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
                         Label:
                             id: grd_left_ftr_sbtotal_label_bal
                             text: "0.00"
                             color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
 
                     # Tax 
                     BoxLayout:
                         id: grd_left_ftr_tax_bxlt
                         orientation: 'horizontal'
-                        
+                        padding: 0,0,10,0
+
                         Label:
                             id: grd_left_ftr_tax_label_desc
                             text: "Tax"
@@ -277,17 +291,24 @@ ScreenManager:
                             id: grd_left_ftr_tax_label_total
                             text: "0.00"
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
                         Label:
                             id: grd_left_ftr_tax_label_bal
                             text: "0.00"
                             color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
 
                     # Tip 
                     BoxLayout:
                         id: grd_left_ftr_tip_bxlt
                         orientation: 'horizontal'
-
+                        padding: 0,0,10,0
+                        
                         Label:
                             id: grd_left_ftr_tip_label_desc
                             text: "Tip"
@@ -296,17 +317,23 @@ ScreenManager:
                             id: grd_left_ftr_tip_label_total
                             text: "0.00"
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
                         Label:
                             id: grd_left_ftr_tip_label_bal
                             text: "0.00"
                             color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
 
                     # Grand Total 
                     BoxLayout:
                         id: grd_left_ftr_grtotal_bxlt
                         orientation: 'horizontal'
-                        
+                        padding: 0,0,10,0
                         Label:
                             id: grd_left_ftr_grtotal_label_desc
                             text: "Grand Total"
@@ -315,11 +342,17 @@ ScreenManager:
                             id: grd_left_ftr_grtotal_label_total
                             text: "0.00"
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
                         Label:
                             id: grd_left_ftr_grtotal_label_bal
                             text: "0.00"
                             color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
+                            text_size: self.size
+                            halign: 'right'
+                            valign: 'middle'
 
             # Right Layout   
             BoxLayout:
@@ -334,7 +367,8 @@ ScreenManager:
                     do_scroll_x: True
                     do_scroll_y: False
                     scroll_x: self.grd_right_scview.scroll_x
-                    size_hint_y: 0.0769
+                    size_hint_y: 0.075
+                    effect_cls: 'ScrollEffect'
                     
                     GridLayout:
                         id: grd_right_hdr_scview_grdlt
@@ -343,7 +377,10 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
-
+                        padding: 10
+                        spacing: 10
+                        
+                        
                 # Mid Scrollview GridLayout 
                 ScrollView:
                     id: grd_right_scview
@@ -352,8 +389,9 @@ ScreenManager:
                     do_scroll_y: True
                     do_scroll_x: True
                     scroll_y: self.grd_left_scview.scroll_y
-                    size_hint_y: 1
-
+                    size_hint_y: 0.7
+                    effect_cls: 'ScrollEffect'
+                    
                     GridLayout:
                         id: grd_right_scview_grdlt
                         cols: 1
@@ -363,6 +401,7 @@ ScreenManager:
                         height: self.minimum_height
                         width: self.minimum_width
                         spacing: 10
+                        padding: 10,0,10,0
 
                 # Footer 
                 ScrollView:
@@ -372,8 +411,9 @@ ScreenManager:
                     do_scroll_x: True
                     do_scroll_y: False
                     scroll_x: self.grd_right_scview.scroll_x
-                    size_hint_y: 0.3076
-
+                    size_hint_y: 0.225
+                    effect_cls: 'ScrollEffect'
+                    
                     GridLayout:
                         id: grd_right_ftr_scview_grdlt
                         cols: 1
@@ -382,6 +422,8 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
+                        spacing: 10
+                        padding: 10,10,10,10
 
 <Label>:
     color: 1,1,1,1

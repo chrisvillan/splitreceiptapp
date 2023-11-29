@@ -18,6 +18,7 @@ from kivy.core.text import Label as CoreLabel
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.image import Image
 from kivy.graphics import Rectangle, Color, BoxShadow, RoundedRectangle, Ellipse
+from kivy.core.clipboard import Clipboard
 
 from kivy.lang import Builder
 
@@ -236,7 +237,6 @@ class GridScreen(Screen):
         self.width_item = mn_screen.width_item
 
 
-        layout_left.cols = 3
         layout_right.cols = len(persons)
 
         layout_right_hdr.cols = len(persons)
@@ -248,26 +248,33 @@ class GridScreen(Screen):
         #Adds persons
         row_objects = []
         for i in range(len(persons)):
-            label_item = Label(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
-            label_item.text_size = label_item.size
-            label_item.halign = 'center'
-            label_item.valign = 'middle'
+            # label_item = Label(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
+            # label_item.text_size = label_item.size
+            # label_item.halign = 'center'
+            # label_item.valign = 'middle'
+            label_item = ButtonType4(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
+            label_item.bind(on_release=self.generate_summary)
             row_objects.append(label_item)
             layout_right_hdr.add_widget(label_item)
         
         #Add items
         for i in range(len(items)):
             row_objects = []
-            label_item = Label(text=f'{items[i][0].text}', size_hint_x=0.5, size_hint_y=None, height=self.height_item)
-            label_price = Label(text=f'{float(items[i][1].text):.2f}', size_hint_x=0.25, size_hint_y=None, height=self.height_item)
-            label_qty = Label(text='0', size_hint_x=0.25, size_hint_y=None, height=self.height_item)
+            bxlt = BoxLayout(orientation='horizontal', size_hint_y=None, height=self.height_item)
+            
+            label_item = Label(text=f'{items[i][0].text}', size_hint_x=0.5)
+            label_price = Label(text=f'{float(items[i][1].text):.2f}', size_hint_x=0.25)
+            label_qty = Label(text='0', size_hint_x=0.25)
             
             
+            
+            bxlt.add_widget(label_item)
+            bxlt.add_widget(label_price)
+            bxlt.add_widget(label_qty)
+            layout_left.add_widget(bxlt)
 
-            layout_left.add_widget(label_item)
-            layout_left.add_widget(label_price)
-            layout_left.add_widget(label_qty)
-
+            Clock.schedule_once(lambda dt, bxlt=bxlt: self.align_label_bxlt(bxlt), 0.05)
+            
             #Add Buttons
             for j in range(len(persons)):
                 button = ButtonType4(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
@@ -276,12 +283,34 @@ class GridScreen(Screen):
                 
         #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
-        for i in range(len(persons)*row):
-            label_item = Label(text=f'0.00',size_hint=(None,None), height=self.height_item, width = self.width_item)
-            layout_right_btm.add_widget(label_item)
+        label_total = self.ids.grd_left_ftr_sbtotal_label_total
 
+        for i in range(len(persons)*row):
+            label_item = Label(text=f'0.00',size_hint=(None,None), height=label_total.height, width = self.width_item)
+            layout_right_btm.add_widget(label_item)
+            
         self.import_mnscreen_totals()
         self.update_ftr_totals()
+
+    def align_label_bxlt(self, bxlt):
+        label_item = bxlt.children[len(bxlt.children)-1]
+        label_price = bxlt.children[len(bxlt.children)-2]
+        label_qty = bxlt.children[len(bxlt.children)-3]
+
+        label_item.text_size = label_item.size
+        label_price.text_size = label_price.size
+        label_qty.text_size = label_qty.size
+
+        label_item.halign = 'center'
+        label_price.halign = 'right'
+        label_qty.halign = 'center'
+
+        label_item.valign = 'middle'
+        label_price.valign = 'middle'
+        label_qty.valign = 'middle'
+
+        # label_qty.padding = 0,0,20,0
+        # bxlt.padding = 5,0,5,0
 
     def import_mnscreen_totals(self):
         mn_screen = self.manager.get_screen("main_screen")
@@ -313,15 +342,16 @@ class GridScreen(Screen):
     def update_btn_totals(self):
         layout_right = self.ids.grd_right_scview_grdlt
         layout_right_hdr = self.ids.grd_right_hdr_scview_grdlt
-        layout_left = self.ids.grd_left_scview_grdlt
+        layout_left = self.get_left_arr()
 
         item_prices = []
         item_qtys = []
 
         #Get item prices and qty
-        for i in range(len(layout_left.children)-2,0,-3):
-            item_prices.append(layout_left.children[i])
-            item_qtys.append(layout_left.children[i-1])
+        for i in range(len(layout_left)):
+            row = layout_left[i]
+            item_prices.append(row[len(row)-2])
+            item_qtys.append(row[len(row)-1])
         
         mark = len(layout_right.children)-1
         for i in range(len(item_prices)):
@@ -370,7 +400,7 @@ class GridScreen(Screen):
         grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
         grd_right_ftr = self.grd_to_arr(self.ids.grd_right_ftr_scview_grdlt)
         
-        grd_left = self.grd_to_arr(self.ids.grd_left_scview_grdlt)
+        grd_left = self.get_left_arr()
         grd_left_ftr = self.get_left_ftr_arr()
 
         #Get factor
@@ -430,13 +460,14 @@ class GridScreen(Screen):
         tip_obj = grd_right_ftr[row_tip]
         for item in tip_obj:
             tip_arr.append(float(item.text))
-			
+		
+        
         size_col = len(grd_left[0])
         qty_arr =[]
         for i in range(len(grd_left)):
             label = grd_left[i][size_col - 1]
             qty_arr.append(label.text)
-            
+        
         is_full = True
         for i in qty_arr:
             if i == '0':
@@ -474,7 +505,7 @@ class GridScreen(Screen):
                     total = round(total + float(item.text), 2)
             label = grd_left_ftr[i][2]
             label.text = f'{total:.2f}'
-        
+         
     def balance_ftr_totals(self, total, bal, arr):
         remainder = round(total - bal, 2)
         remainder = int(abs(remainder * 100))
@@ -528,6 +559,21 @@ class GridScreen(Screen):
 
         return grd_arr
 
+    def get_left_arr(self):
+        left_bxlt = self.ids.grd_left_scview_grdlt
+        arr = []
+        row = []
+
+        
+        for i in range(len(left_bxlt.children), 0, -1):
+            bxlt = left_bxlt.children[i-1]
+            for c in range(len(bxlt.children), 0, -1):
+                row.append(bxlt.children[c-1])
+            arr.append(row)
+            row = []
+        
+        return(arr)
+    
     def get_left_ftr_arr(self):
         ftr_bxlt = self.ids.grd_left_ftr_bxlt
         ftr_arr = []
@@ -556,6 +602,54 @@ class GridScreen(Screen):
                 str_num += char
         
         return float(str_num) if str_num else None
+    
+    def generate_summary(self,btn):
+        index = 0
+        grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
+
+        for i in range(len(grd_right_hdr)):
+            if btn == grd_right_hdr[i]:
+                index = i
+        
+        summary = self.get_person_total(index)
+
+        popup = SummaryPopup(label_text=summary)
+        popup.open()
+
+    def get_person_total(self,index_pers):
+        grd_right = self.grd_to_arr(self.ids.grd_right_scview_grdlt)
+        grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
+        grd_right_ftr = self.grd_to_arr(self.ids.grd_right_ftr_scview_grdlt)
+
+        grd_left = self.get_left_arr()
+        grd_left_ftr = self.get_left_ftr_arr()
+
+        items = []
+        prices = []
+
+        for i in range(len(grd_right)):
+                item = grd_right[i][index_pers]
+                if item.text.replace('.','').isnumeric():
+                    item_desc = grd_left[i][0]
+                    items.append(item_desc.text)
+                    prices.append(item.text)
+                    
+        subtotal = grd_right_ftr[0][index_pers].text
+        tax_desc = grd_left_ftr[1][0].text
+        tax = grd_right_ftr[1][index_pers].text
+        tip_desc = grd_left_ftr[2][0].text
+        tip = grd_right_ftr[2][index_pers].text
+        grandtotal = grd_right_ftr[3][index_pers].text
+
+        summary = grd_right_hdr[index_pers].text + ':'
+        for i in range(len(items)):
+            summary = summary + f'\n{items[i]}: ${prices[i]}'
+        summary = summary + f'\nSubTotal: ${subtotal}'
+        summary = summary + f'\n{tax_desc}: ${tax}'
+        summary = summary + f'\n{tip_desc}: ${tip}'
+        summary = summary + f'\nGrandTotal: ${grandtotal}'
+
+        return summary
 
 class MyFunctions:
     def __init__(self):
@@ -807,6 +901,40 @@ class ConfirmPopup(Popup):
         self.dismiss()
     def close_popup(self, instance):
         self.dismiss()
+
+class SummaryPopup(Popup):
+    def __init__(self, label_text, **kwargs):
+        super(SummaryPopup, self).__init__(**kwargs)
+        self.background_color = (0,0,0,0)
+        self.title = ''
+        self.separator_color = 0,0,0,0
+        self.size_hint = (0.7, 0.5)
+        self.pos_hint = {"top": 0.8}
+        self.mytext = label_text
+        bxlt = BoxLayoutType1(orientation='vertical', padding=10)
+        scroll_view = ScrollView(do_scroll_y=True,do_scroll_x=False)
+        label = Label(text=label_text, size_hint_y= None)
+        label.height = label.texture_size[1]
+        label.padding = 10,10
+        
+        label.bind(texture_size=label.setter('size'))
+        scroll_view.add_widget(label)
+        bxlt_bot = BoxLayoutType1(orientation='horizontal', spacing=10, size_hint_y=0.2)
+        btn = ButtonType2(text='Okay', on_press=self.dismiss, size_hint_x=0.7)
+        self.btn_copy = ButtonType2(text='Copy', on_press=self.copy_to_clipboard, size_hint_x=0.3)
+        bxlt_bot.add_widget(btn)
+        bxlt_bot.add_widget(self.btn_copy)
+        bxlt.add_widget(scroll_view)
+        bxlt.add_widget(bxlt_bot)
+
+        content_layout = BoxLayout(orientation='vertical')
+        content_layout.add_widget(bxlt)
+
+        self.content = content_layout
+
+    def copy_to_clipboard(self, instance):
+        self.btn_copy.text = 'Copied!'
+        Clipboard.copy(self.mytext)
 
 class PopupBoxLayout(BoxLayout):
     def __init__(self, **kwargs):
