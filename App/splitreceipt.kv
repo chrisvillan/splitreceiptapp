@@ -14,7 +14,7 @@ ScreenManager:
         padding: 10
         canvas.before:
             Color:
-                rgba: (61/255,71/255,106/255,1)
+                rgba: (58/255,69/255,102/255,1)
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -127,8 +127,8 @@ ScreenManager:
 
                 ButtonType2:
                     id: mn_left_clear_btn
-                    text: "Clear Items"
-                    on_release: root.clear_left_items_popup()
+                    text: "Clear All"
+                    on_release: root.clear_all_items_popup()
                     size_hint_y: 0.1
                     color: 1,1,1,1
 
@@ -178,13 +178,13 @@ ScreenManager:
         padding: 10
         canvas.before:
             Color:
-                rgba: (61/255,71/255,106/255,1)
+                rgba: (58/255,69/255,102/255,1)
             Rectangle:
                 pos: self.pos
                 size: self.size
 
         #Go to MainScreen
-        ButtonType3:
+        ButtonType3_flip:
             id: to_mnscreen_btn
             text: "Go to Main Screen"
             on_release: 
@@ -237,6 +237,7 @@ ScreenManager:
                         size_hint_y: None
                         orientation: 'lr-tb'
                         height: self.minimum_height
+                        spacing: 10
 
                 # Bottom Layout
                 BoxLayout:
@@ -260,6 +261,7 @@ ScreenManager:
                         Label:
                             id: grd_left_ftr_sbtotal_label_bal
                             text: "0.00"
+                            color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
 
                     # Tax 
@@ -278,6 +280,7 @@ ScreenManager:
                         Label:
                             id: grd_left_ftr_tax_label_bal
                             text: "0.00"
+                            color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
 
                     # Tip 
@@ -296,6 +299,7 @@ ScreenManager:
                         Label:
                             id: grd_left_ftr_tip_label_bal
                             text: "0.00"
+                            color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
 
                     # Grand Total 
@@ -314,6 +318,7 @@ ScreenManager:
                         Label:
                             id: grd_left_ftr_grtotal_label_bal
                             text: "0.00"
+                            color: 111/255,122/255,154/255,1
                             size_hint_x: 0.25
 
             # Right Layout   
@@ -357,6 +362,7 @@ ScreenManager:
                         size_hint_x: None
                         height: self.minimum_height
                         width: self.minimum_width
+                        spacing: 10
 
                 # Footer 
                 ScrollView:
@@ -448,7 +454,6 @@ ScreenManager:
             blur_radius: 25
             spread_radius: -10,-10
             border_radius: 10,10,10,10
-            blur_radius: 80
         Color:
             rgba: 1,1,1,1
         RoundedRectangle:
@@ -456,6 +461,63 @@ ScreenManager:
             pos: self.pos
             size: self.size
             radius: [20]
+
+<ButtonType3_flip@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        Color:
+            rgba: 0,0,0,0.3
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            blur_radius: 25
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/btn_color_1_flipped.png'
+            pos: self.pos
+            size: self.size
+            radius: [20]
+
+<ButtonType4@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    color: 111/255,122/255,154/255,1
+    canvas.before:
+        Color:
+            rgba: 44/255,51/255,80/255,1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10]
+
+<ButtonType5@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        Color:
+            rgba: 0,0,0,0.5
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            blur_radius: 25
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/btn_color_3_fade.png'
+            pos: self.pos
+            size: self.size
+            radius: [10]
+
 
 <BoxLayoutType1@BoxLayout>:
     background_color: (0,0,0,0)

@@ -48,6 +48,7 @@ class MainScreen(Screen):
         else:
             popup = WarningPopup(label_text='Please add more items/person\nMinimum of 2 items and 2 persons')
             popup.open()
+
     def add_preset(self):
         self.additem_left("Item A", "50.00")
         self.additem_left("Item B", "30.00")
@@ -63,6 +64,15 @@ class MainScreen(Screen):
         tip_btn.text = "15.00"
         self.update_totals(self, tax_btn.text)
 
+    def clear_all_items(self):
+        self.input_persons= []
+        self.ids.mn_right_scview_grdlt.clear_widgets()
+        self.input_items = []
+        self.ids.mn_left_scview_grdlt.clear_widgets()
+
+    def clear_all_items_popup(self):
+        popup = ConfirmPopup(on_dismiss_callback=self.clear_all_items, label_text='Clear all?')
+        popup.open()
 
     def clear_left_items_popup(self):
         popup = ConfirmPopup(on_dismiss_callback=self.clear_left_items, label_text='Clear all items?')
@@ -222,8 +232,8 @@ class GridScreen(Screen):
         layout_right_hdr.clear_widgets()
         layout_right_btm.clear_widgets()
         
-        height_item = mn_screen.height_item
-        width_item = mn_screen.width_item
+        self.height_item = mn_screen.height_item
+        self.width_item = mn_screen.width_item
 
 
         layout_left.cols = 3
@@ -238,7 +248,7 @@ class GridScreen(Screen):
         #Adds persons
         row_objects = []
         for i in range(len(persons)):
-            label_item = Label(text=f'{persons[i].text}',size_hint=(None,None), height=height_item, width = width_item)
+            label_item = Label(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
             label_item.text_size = label_item.size
             label_item.halign = 'center'
             label_item.valign = 'middle'
@@ -248,27 +258,26 @@ class GridScreen(Screen):
         #Add items
         for i in range(len(items)):
             row_objects = []
-            label_item = Label(text=f'{items[i][0].text}', size_hint_x=0.5, size_hint_y=None, height=height_item)
-            label_price = Label(text=f'{float(items[i][1].text):.2f}', size_hint_x=0.25, size_hint_y=None, height=height_item)
-            label_qty = Label(text='0', size_hint_x=0.25, size_hint_y=None, height=height_item)
+            label_item = Label(text=f'{items[i][0].text}', size_hint_x=0.5, size_hint_y=None, height=self.height_item)
+            label_price = Label(text=f'{float(items[i][1].text):.2f}', size_hint_x=0.25, size_hint_y=None, height=self.height_item)
+            label_qty = Label(text='0', size_hint_x=0.25, size_hint_y=None, height=self.height_item)
             
-            label_item.text_size = label_item.size
-            label_item.valign = 'middle'
+            
 
             layout_left.add_widget(label_item)
             layout_left.add_widget(label_price)
             layout_left.add_widget(label_qty)
-    
+
             #Add Buttons
             for j in range(len(persons)):
-                button = Button(text='Add', size_hint=(None, None), height=height_item, width = width_item)
+                button = ButtonType4(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
                 button.bind(on_press=self.change_color)
                 layout_right.add_widget(button)
                 
         #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
         for i in range(len(persons)*row):
-            label_item = Label(text=f'0.00',size_hint=(None,None), height=height_item, width = width_item)
+            label_item = Label(text=f'0.00',size_hint=(None,None), height=self.height_item, width = self.width_item)
             layout_right_btm.add_widget(label_item)
 
         self.import_mnscreen_totals()
@@ -285,10 +294,20 @@ class GridScreen(Screen):
         self.ids.grd_left_ftr_grtotal_label_total.text = mn_screen.ids.mn_left_grtotal_label_price.text
 
     def change_color(self, instance):
-        if instance.background_color == [0, 1, 0, 1]:
-            instance.background_color = [1, 1, 1, 1]
+        grdlayout = instance.parent
+        index = instance.parent.children.index(instance)
+        instance.parent.remove_widget(instance)
+        
+        if isinstance(instance, ButtonType4):
+            new_button = ButtonType5(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
+            new_button.bind(on_press=self.change_color)
         else:
-            instance.background_color = [0, 1, 0, 1]
+            new_button = ButtonType4(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
+            new_button.bind(on_press=self.change_color)
+        
+        
+        grdlayout.add_widget(new_button, index)
+        
         self.update_btn_totals()
 
     def update_btn_totals(self):
@@ -309,7 +328,7 @@ class GridScreen(Screen):
             btn_grns = []
             for j in range(len(layout_right_hdr.children)):
                 btn = layout_right.children[mark]
-                if btn.background_color == [0, 1, 0, 1]:
+                if type(btn) is ButtonType5:
                     btn_grns.append(btn)
                 else:
                     btn.text = 'Add'
@@ -564,7 +583,7 @@ class MyFunctions:
             label.texture_update()
             label.size = label.texture_size
 
-        print(f'Label Post| size: {label.size} | text_size: {label.text_size} | texture_size: {label.texture_size}')
+        # print(f'Label Post| size: {label.size} | text_size: {label.text_size} | texture_size: {label.texture_size}')
         txtinput.font_size = curr_font_size
         
     def txtinput_valign(self, txtinput, max_text):
@@ -896,6 +915,14 @@ class ButtonType1(Button):
 class ButtonType2(Button):
     def __init__(self, **kwargs):
         super(ButtonType2, self).__init__(**kwargs)
+
+class ButtonType4(Button):
+    def __init__(self, **kwargs):
+        super(ButtonType4, self).__init__(**kwargs)
+
+class ButtonType5(Button):
+    def __init__(self, **kwargs):
+        super(ButtonType5, self).__init__(**kwargs)
 
 class SplitReceipt(App):
     def build(self):
