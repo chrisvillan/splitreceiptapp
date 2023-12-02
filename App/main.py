@@ -25,7 +25,8 @@ from kivy.lang import Builder
 
 import os
 import sys
-
+import pprint
+import json
 # To update for app deployment
 # buildozer -v android debug
 # Config.set('graphics', 'width', '540')
@@ -396,17 +397,15 @@ class GridScreen(Screen):
             self.change_dict_val(new_button, 'lock', False)
             label = self.get_dict_val(new_button, 'modifier_id')
             label.text = '1'
-        
-        # print(self.button_grid)
+
         grdlayout.add_widget(new_button, index)
-        
+        for btn in self.button_grid:
+            # pprint.pprint(btn)
+            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(btn)
         self.update_btn_totals()
 
     def get_btn_state(self, id, state):
         if state == 'LONG PRESS':
-            # val = self.get_dict_val(id, 'value')
-            # print(val)
-            # self.ids.grd_left_hdr_label_desc.text = str(val)
             label = self.get_dict_val(id, 'modifier_id')
             popup = ButtonPopup(on_dismiss_callback=self.update_btn, btn_id=id, lbl_id=label)
             popup.open() 
