@@ -19,6 +19,7 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.image import Image
 from kivy.graphics import Rectangle, Color, BoxShadow, RoundedRectangle, Ellipse
 from kivy.core.clipboard import Clipboard
+from kivy.uix.relativelayout import RelativeLayout
 
 from kivy.lang import Builder
 
@@ -110,8 +111,6 @@ class MainScreen(Screen):
         label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
         label_mid.color = 1,1,1,1
         txtinput_price = CurrencyTextInput(multiline=False, size_hint=(0.6, None), height=self.height_item)
-        txtinput_price.background_color = 0,0,0,0
-        txtinput_price.foreground_color = 1,1,1,1
         txtinput_price.text = text_price
         txtinput_price.bind(text=self.update_totals)
 
@@ -266,8 +265,6 @@ class GridScreen(Screen):
             label_price = Label(text=f'{float(items[i][1].text):.2f}', size_hint_x=0.25)
             label_qty = Label(text='0', size_hint_x=0.25)
             
-            
-            
             bxlt.add_widget(label_item)
             bxlt.add_widget(label_price)
             bxlt.add_widget(label_qty)
@@ -277,10 +274,34 @@ class GridScreen(Screen):
             
             #Add Buttons
             for j in range(len(persons)):
-                button = ButtonType4(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
+                bxlt = RelativeLayout(size_hint=(None, None), height=self.height_item, width = self.width_item)
+                button = ButtonType4(text='Add' )
                 button.bind(on_press=self.change_color)
-                layout_right.add_widget(button)
+                label_qty = Label(text='1')
                 
+                # label_qty.halign = 'right'
+                # label_qty.valign = 'top'
+                
+                bxlt.add_widget(button)
+                bxlt.add_widget(label_qty)
+                
+                layout_right.add_widget(bxlt)
+                
+                my_dict = {
+                    'id': button,
+                    'state': False,
+                    'lock': False,
+                    'modifier': 1,
+                    'modifier_id': label_qty,
+                    'value': 0.00,
+                    'row': i,
+                    'col': j
+                }
+                self.button_grid.append(my_dict)
+        
+        Clock.schedule_once(lambda dt, bxlt=bxlt: self.align_label_btn(layout_right), 0.05)
+        
+            
         #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
         label_total = self.ids.grd_left_ftr_sbtotal_label_total
@@ -288,9 +309,30 @@ class GridScreen(Screen):
         for i in range(len(persons)*row):
             label_item = Label(text=f'0.00',size_hint=(None,None), height=label_total.height, width = self.width_item)
             layout_right_btm.add_widget(label_item)
-            
+        
         self.import_mnscreen_totals()
         self.update_ftr_totals()
+
+    def align_label_btn(self, layout_right):
+        bxlt = self.ids.grd_right_scview_grdlt
+        for i in range(len(bxlt.children), 0, -1):
+            for btn in layout_right.children:
+                ftlt = bxlt.children[i-1]
+                label = ftlt.children[0]
+                label.text_size = label.size
+                
+                x_pos = btn.width-label.texture_size[0]
+                y_pos = btn.height-label.texture_size[1]
+                label.pos = (x_pos, y_pos)
+
+                btn_x, btn_y = btn.pos
+                with label.canvas.before:
+                    Color(1, 0, 0, 1)  # Set the color of the circle (red in this case)
+                    circle = Ellipse(size=(label.texture_size[1],label.texture_size[1]), pos=(x_pos-(label.texture_size[0]/2),y_pos))
+                
+                # print(f'BUTTN | size: {btn.size} | pos: {btn.pos} | pos_hint {btn.pos_hint}')
+                # print(f'LABEL | size: {label.size} | pos: {label.pos} | pos_hint: {label.pos_hint} | texture_size {label.texture_size} | text_size {label.text_size}')
+                # print(f'CIRCL | size: {circle.size} | pos: {circle.pos}')
 
     def align_label_bxlt(self, bxlt):
         label_item = bxlt.children[len(bxlt.children)-1]
@@ -322,26 +364,78 @@ class GridScreen(Screen):
         self.ids.grd_left_ftr_tip_label_total.text = mn_screen.ids.mn_left_tip_txinput.text
         self.ids.grd_left_ftr_grtotal_label_total.text = mn_screen.ids.mn_left_grtotal_label_price.text
 
+    def change_dict_val(self, id, key, val):
+        for my_dict in self.button_grid:
+            if my_dict['id'] == id:
+                my_dict[key] = val
+                break
+    
+    def get_dict_val(self,id,key):
+        for my_dict in self.button_grid:
+            if my_dict['id'] == id:
+                return my_dict[key]
+
     def change_color(self, instance):
         grdlayout = instance.parent
         index = instance.parent.children.index(instance)
         instance.parent.remove_widget(instance)
         
         if isinstance(instance, ButtonType4):
-            new_button = ButtonType5(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
-            new_button.bind(on_press=self.change_color)
+            new_button = ButtonType6(on_dismiss_callback=self.get_btn_state, text='', size_hint=(None, None), height=self.height_item, width = self.width_item)
+            # new_button.bind(on_release = self.change_color)
+            self.change_dict_val(instance, 'id', new_button)
+            self.change_dict_val(new_button,'state', True)
         else:
             new_button = ButtonType4(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
             new_button.bind(on_press=self.change_color)
+
+            self.change_dict_val(instance, 'id', new_button)
+            self.change_dict_val(new_button,'state', False)
+            self.change_dict_val(new_button, 'value', '0.00')
+            self.change_dict_val(new_button, 'modifier', '1')
+            self.change_dict_val(new_button, 'lock', False)
+            label = self.get_dict_val(new_button, 'modifier_id')
+            label.text = '1'
         
-        
+        # print(self.button_grid)
         grdlayout.add_widget(new_button, index)
         
         self.update_btn_totals()
 
+    def get_btn_state(self, id, state):
+        if state == 'LONG PRESS':
+            # val = self.get_dict_val(id, 'value')
+            # print(val)
+            # self.ids.grd_left_hdr_label_desc.text = str(val)
+            label = self.get_dict_val(id, 'modifier_id')
+            popup = ButtonPopup(on_dismiss_callback=self.update_btn, btn_id=id, lbl_id=label)
+            popup.open() 
+        else:
+            self.change_color(id)
+    
+    def update_btn(self, btn_id, price_text, count_text):
+        price_change = False
+        count_change = False
+        label = self.get_dict_val(btn_id, 'modifier_id')
+        if btn_id.text != price_text:
+            price_change = True
+        if label.text != count_text:
+            count_change = True
+        
+        if price_change == True:
+            btn_id.text = price_text
+            self.change_dict_val(btn_id, 'value', price_text)
+            self.change_dict_val(btn_id, 'lock', True)
+
+        if count_change == True:
+            label.text = count_text
+            self.change_dict_val(btn_id, 'modifier', count_text)
+            
+        if price_change == True or count_change == True:
+            self.update_btn_totals()
     def update_btn_totals(self):
-        layout_right = self.ids.grd_right_scview_grdlt
-        layout_right_hdr = self.ids.grd_right_hdr_scview_grdlt
+        #self.button_grid
+        grd_right = self.get_btn_arr()
         layout_left = self.get_left_arr()
 
         item_prices = []
@@ -353,28 +447,42 @@ class GridScreen(Screen):
             item_prices.append(row[len(row)-2])
             item_qtys.append(row[len(row)-1])
         
-        mark = len(layout_right.children)-1
         for i in range(len(item_prices)):
-            btn_grns = []
-            for j in range(len(layout_right_hdr.children)):
-                btn = layout_right.children[mark]
-                if type(btn) is ButtonType5:
-                    btn_grns.append(btn)
+            btn_active = []
+            btn_lock_price_total = 0.00
+            btn_modifier_count = 0
+            for j in range(len(grd_right[i])):
+                btn = grd_right[i][j][0]
+                btn_lock = self.get_dict_val(btn, 'lock')
+                if type(btn) is ButtonType6:
+                    if btn_lock == False:
+                        btn_active.append(btn)
+                    else:
+                        if btn.text != '':
+                            btn_lock_price_total = btn_lock_price_total + float(btn.text)
                 else:
                     btn.text = 'Add'
-                mark -= 1
             
-            item_qtys[i].text = str(len(btn_grns))
+            item_qtys[i].text = str(len(btn_active))
 
-            if len(btn_grns) > 0:
+            if len(btn_active) > 0:
                 balance = float(item_prices[i].text)
-                price = balance/len(btn_grns)
+                balance = balance - btn_lock_price_total
+                for btn in btn_active:
+                    count = int(self.get_dict_val(btn, 'modifier'))
+                    btn_modifier_count = btn_modifier_count + count
+
+                price = balance/btn_modifier_count
                 price = int(price * 10**2)/(10**2)
                 btn_prices = []
-                for btn in btn_grns:
+                btn_modifier_count = 0
+                
+                for btn in btn_active:
                     if balance >= price:
-                        btn_prices.append(price)
-                        balance = round(balance - price,2)
+                        modifier = int(self.get_dict_val(btn, 'modifier'))
+                        btn_price = price * modifier
+                        btn_prices.append(btn_price)
+                        balance = round(balance - btn_price,2)
 
                 #If remainder, spread out evenly
                 if balance != 0:
@@ -390,13 +498,14 @@ class GridScreen(Screen):
                             p += 1
 
                 for i in range(len(btn_prices)):
-                    btn = btn_grns[i]
+                    btn = btn_active[i]
                     btn.text = f'{btn_prices[i]:.2f}'  
+                    self.change_dict_val(btn,'value', btn_prices[i])
 
         self.update_ftr_totals()
     
     def update_ftr_totals(self):
-        grd_right = self.grd_to_arr(self.ids.grd_right_scview_grdlt)
+        grd_right = self.get_btn_arr()
         grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
         grd_right_ftr = self.grd_to_arr(self.ids.grd_right_ftr_scview_grdlt)
         
@@ -415,7 +524,7 @@ class GridScreen(Screen):
             subtotal = 0.00
 
             for i in range(len(grd_right)):
-                item = grd_right[i][j]
+                item = grd_right[i][j][0]
                 if item.text.replace('.','').isnumeric():
                     subtotal = round(subtotal + float(item.text), 2)
             
@@ -558,6 +667,27 @@ class GridScreen(Screen):
                     row_arr = []
 
         return grd_arr
+    
+    def get_btn_arr(self):
+        bxlt = self.ids.grd_right_scview_grdlt
+        arr = []
+        row = []
+        col_size = self.ids.grd_right_scview_grdlt.cols
+        count = 0
+
+        for i in range(len(bxlt.children), 0, -1):
+            ftlt = bxlt.children[i-1]
+            btn = ftlt.children[len(ftlt.children)-1]
+            lbl = ftlt.children[0]
+            count += 1
+        
+            row.append([btn,lbl])
+            if count == col_size:
+                arr.append(row)
+                row = []
+                count = 0
+        # print(arr)
+        return(arr)
 
     def get_left_arr(self):
         left_bxlt = self.ids.grd_left_scview_grdlt
@@ -617,7 +747,7 @@ class GridScreen(Screen):
         popup.open()
 
     def get_person_total(self,index_pers):
-        grd_right = self.grd_to_arr(self.ids.grd_right_scview_grdlt)
+        grd_right = self.get_btn_arr()
         grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
         grd_right_ftr = self.grd_to_arr(self.ids.grd_right_ftr_scview_grdlt)
 
@@ -651,6 +781,134 @@ class GridScreen(Screen):
 
         return summary
 
+class ButtonType6(Button):
+    def __init__(self, on_dismiss_callback, **kwargs):
+        super(ButtonType6, self).__init__(**kwargs)
+        self.on_dismiss_callback = on_dismiss_callback
+        self.scheduled_event = None
+        self.my_state = False
+        self.my_press = ''
+    def on_press(self):
+        self.scheduled_event = Clock.schedule_once(lambda dt: self.my_function(), 0.5)
+
+    def on_release(self):
+        if self.my_state == False:
+            self.my_press = 'SHORT PRESS'
+            self.on_dismiss_callback(self, self.my_press)
+
+        if self.my_press == 'LONG PRESS':
+            self.my_state = False
+        self.scheduled_event.cancel()
+ 
+    def my_function(self):
+        self.my_state = True
+        self.my_press = 'LONG PRESS'
+        self.on_dismiss_callback(self, self.my_press)
+
+#ButtonPopup - need to prevent custom input from over total
+#if custom input is the total = make popup warning and delete all other buttons
+class ButtonPopup(Popup):
+    def __init__(self, on_dismiss_callback, btn_id, lbl_id, **kwargs):
+        super(ButtonPopup, self).__init__(**kwargs)
+        self.on_dismiss_callback = on_dismiss_callback
+        self.original_btn_id = btn_id
+        self.background_color = (0,0,0,0)
+        self.title = ''
+        self.separator_color = 0,0,0,0
+        self.size_hint = (0.9, 0.3)
+        self.pos_hint = {"top": 0.7}
+        self.initial_val = btn_id.text
+        self.initial_modifer = lbl_id.text
+        bxlt = BoxLayoutType1(orientation='vertical', spacing=10, padding =10)
+        bxlt_top = BoxLayout(orientation='horizontal', size_hint_y=0.2)
+        bxlt_mid = BoxLayout(orientation = 'vertical', size_hint_y=0.6, spacing=10)
+        bxlt_mid_top = BoxLayout(orientation='horizontal', spacing=10)
+        bxlt_mid_bot = BoxLayout(orientation='horizontal')
+        bxlt_bot = BoxLayout(orientation='horizontal', size_hint_y=0.2)
+
+        autofit_txtinput = MyFunctions()
+
+        #bxlt_top
+        label_name = Label(text="Name")
+        label_item = Label(text='Item')
+        label_price = Label(text='Price')
+        
+        #bxlt_mid_top
+        self.btn_txtinput = CurrencyTextInput(text=self.initial_val, size_hint_x = 0.4, readonly=True)
+        self.btn_txtinput.foreground_color=[0.5,0.5,0.5,1]
+        btn_minus = Button(text='-', size_hint_x=0.2, on_press=self.number_minus)
+        
+        self.txtinput_count = ClearTextInput(text=self.initial_modifer, size_hint_x=0.2, readonly=True)
+        
+        Clock.schedule_once(lambda dt: autofit_txtinput.txtinput_autofit_number(self.txtinput_count), 0.05)
+
+        btn_plus = Button(text = '+', size_hint_x=0.2, on_press=self.number_plus)
+        
+        #bxlt_mid_bot
+        btn_custom = Button(text='Custom', on_release=self.btn_custom)
+
+        #bxlt_bot
+        btn_ok = Button(text='Okay', on_press=self.dismiss_popup)
+        btn_cancel = Button(text='Cancel', on_press=self.dismiss_popup)
+
+        bxlt_top.add_widget(label_name)
+        bxlt_top.add_widget(label_item)
+        bxlt_top.add_widget(label_price)
+
+        bxlt_mid_top.add_widget(self.btn_txtinput)
+        bxlt_mid_top.add_widget(btn_minus)
+        bxlt_mid_top.add_widget(self.txtinput_count)
+        bxlt_mid_top.add_widget(btn_plus)
+        
+        bxlt_mid_bot.add_widget(btn_custom)
+
+        bxlt_mid.add_widget(bxlt_mid_top)
+        bxlt_mid.add_widget(bxlt_mid_bot)
+
+        bxlt_bot.add_widget(btn_ok)
+        bxlt_bot.add_widget(btn_cancel)
+
+        bxlt.add_widget(bxlt_top)
+        bxlt.add_widget(bxlt_mid)
+        bxlt.add_widget(bxlt_bot)
+
+        self.content = bxlt
+    
+    def number_plus(self, instance):
+        if self.txtinput_count.foreground_color == [0.5,0.5,0.5,1]:
+            self.txtinput_count.foreground_color=[1,1,1,1]
+            self.btn_txtinput.text = self.initial_val
+            self.btn_txtinput.readonly = True
+            self.btn_txtinput.foreground_color=[0.5,0.5,0.5,1]
+
+        new_val = str(int(self.txtinput_count.text) + 1)
+        self.txtinput_count.text = new_val
+
+    def number_minus(self, instance):
+        if self.txtinput_count.foreground_color == [0.5,0.5,0.5,1]:
+            self.txtinput_count.foreground_color=[1,1,1,1]
+            self.btn_txtinput.text = self.initial_val
+            self.btn_txtinput.readonly = True
+            self.btn_txtinput.foreground_color=[0.5,0.5,0.5,1]
+        
+        new_val = str(int(self.txtinput_count.text) - 1)
+        self.txtinput_count.text = new_val
+    
+    def btn_custom(self,instance):
+        self.txtinput_count.text = '1'
+        self.txtinput_count.foreground_color=[0.5,0.5,0.5,1]
+        self.btn_txtinput.text ='0.00'
+        self.btn_txtinput.readonly = False
+        self.btn_txtinput.focus = True
+        self.btn_txtinput.foreground_color=[1,1,1,1]
+
+    def dismiss_popup(self, instance):
+        self.on_dismiss_callback(self.original_btn_id, self.btn_txtinput.text, self.txtinput_count.text)
+        self.dismiss()
+    
+    def close_popup(self, instance):
+        self.dismiss()
+        
 class MyFunctions:
     def __init__(self):
         pass
@@ -694,6 +952,12 @@ class MyFunctions:
         txtinput.multiline = False
         txtinput.halign = 'center'
     
+    def txtinput_autofit_number(self, txtinput):
+        self.txtinput_autofit_font_size(txtinput, '000')
+        self.txtinput_valign(txtinput, '000')
+        txtinput.multiline = False
+        txtinput.halign = 'center'
+
     def txtinput_autofit_item(self, txtinput):
         max_text = 'ABCDEFGHIJKLMNO'
         self.txtinput_autofit_font_size(txtinput, max_text)
@@ -722,7 +986,7 @@ class AddItemPopup(Popup):
         self.txtinput_item = ClearTextInput(size_hint_x=0.6, multiline=False, on_text_validate=self.txtinput_item_validate)
         label = Label(text='$', font_size=24, size_hint_x=0.1)
         label.color = 1,1,1,1
-        self.txtinput_price = CurrencyTextInput(size_hint_x=0.3, background_color=(0,0,0,0), foreground_color=(1,1,1,1), on_text_validate=self.dismiss_popup)
+        self.txtinput_price = CurrencyTextInput(size_hint_x=0.3, on_text_validate=self.dismiss_popup)
 
         bxlt_top.add_widget(self.txtinput_item)
         bxlt_top.add_widget(label)
@@ -806,7 +1070,7 @@ class TaxTipPopup(Popup):
         bxlt_top = BoxLayoutType1(orientation='horizontal')
         self.label_tax_desc = Label(text='Tax', size_hint_x=0.3)
         label = Label(text='$', font_size=24, size_hint_x=0.1)
-        self.txtinput_tax_price = CurrencyTextInput(size_hint_x=0.6,background_color=(0,0,0,0), foreground_color=(1,1,1,1))
+        self.txtinput_tax_price = CurrencyTextInput(size_hint_x=0.6)
         self.txtinput_tax_price.text=self.prices[0]
         bxlt_top.add_widget(self.label_tax_desc)
         bxlt_top.add_widget(label)
@@ -815,7 +1079,7 @@ class TaxTipPopup(Popup):
         bxlt_mid = BoxLayoutType1(orientation='horizontal')
         self.label_tip_desc = Label(text='Tip', size_hint_x=0.3)
         label = Label(text='$', font_size=24, size_hint_x=0.1)
-        self.txtinput_tip_price = CurrencyTextInput(size_hint_x=0.6,background_color=(0,0,0,0), foreground_color=(1,1,1,1))
+        self.txtinput_tip_price = CurrencyTextInput(size_hint_x=0.6)
         self.txtinput_tip_price.text=self.prices[1]
         bxlt_mid.add_widget(self.label_tip_desc)
         bxlt_mid.add_widget(label)
@@ -979,6 +1243,8 @@ class CurrencyTextInput(TextInput):
         self.halign = 'center'
         self.hint_text = '0.00'
         self.input_type = 'number'
+        self.background_color = [0,0,0,0]
+        self.foreground_color = [1,1,1,1]
 
         autofit_txtinput = MyFunctions()
         Clock.schedule_once(lambda dt: autofit_txtinput.txtinput_autofit_currency(self), 0.05)
@@ -1052,6 +1318,8 @@ class ButtonType5(Button):
     def __init__(self, **kwargs):
         super(ButtonType5, self).__init__(**kwargs)
 
+
+    
 class SplitReceipt(App):
     def build(self):
         sm = ScreenManager()
@@ -1059,6 +1327,7 @@ class SplitReceipt(App):
         grid_screen = GridScreen(name='grid_screen')
         sm.add_widget(main_screen)
         sm.add_widget(grid_screen)
+
         return sm
 
 if __name__ == '__main__':

@@ -560,6 +560,27 @@ ScreenManager:
             size: self.size
             radius: [10]
 
+<ButtonType6@Button>:
+    background_color: (0,0,0,0)
+    background_normal: ''
+    
+    canvas.before:
+        Color:
+            rgba: 0,0,0,0.5
+        BoxShadow:
+            pos: self.pos
+            size: self.size
+            offset: 10,-10
+            blur_radius: 25
+            spread_radius: -10,-10
+            border_radius: 10,10,10,10
+        Color:
+            rgba: 1,1,1,1
+        RoundedRectangle:
+            source: 'imgs/btn_color_3_fade.png'
+            pos: self.pos
+            size: self.size
+            radius: [10]
 
 <BoxLayoutType1@BoxLayout>:
     background_color: (0,0,0,0)
