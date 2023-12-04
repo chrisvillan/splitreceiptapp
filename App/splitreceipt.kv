@@ -186,14 +186,24 @@ ScreenManager:
                 size: self.size
 
         #Go to MainScreen
-        ButtonType3_flip:
-            id: to_mnscreen_btn
-            text: "Go to Main Screen"
-            on_release: 
-                root.manager.transition.direction = "right"
-                app.root.current = "main_screen"
+        BoxLayout:
+            id: grd_top_bxlt
+            orientation: 'horizontal'
             size_hint_y: 0.11111
+            spacing: 10
+            ButtonType3_flip:
+                id: to_mnscreen_btn
+                text: "Go to Main Screen"
+                on_release: 
+                    root.manager.transition.direction = "right"
+                    app.root.current = "main_screen"
+                size_hint_x: 0.8
 
+            ButtonType3:
+                id: grd_print_all
+                text: "  Print\nResults"
+                size_hint_x: 0.2
+                on_release: root.generate_all_summary()
         # Below button
         BoxLayout:
             id: grd_sub_bxlt

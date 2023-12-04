@@ -213,19 +213,21 @@ class GridScreen(Screen):
         super(GridScreen, self).__init__(**kwargs)
         self.button_grid = []
         self.grid_objects = []
+        self.items = []
+        self.persons =[]
 
     def on_enter(self):
         mn_screen = self.manager.get_screen("main_screen")
 
         items = mn_screen.input_items
         persons = mn_screen.input_persons
+        new_btn_grd = []
+        
 
         layout_left = self.ids.grd_left_scview_grdlt
         layout_right = self.ids.grd_right_scview_grdlt
         layout_right_hdr = self.ids.grd_right_hdr_scview_grdlt
         layout_right_btm = self.ids.grd_right_ftr_scview_grdlt
-
-#Need to add: save state of children
 
         #clears widgets
         layout_left.clear_widgets()
@@ -248,10 +250,6 @@ class GridScreen(Screen):
         #Adds persons
         row_objects = []
         for i in range(len(persons)):
-            # label_item = Label(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
-            # label_item.text_size = label_item.size
-            # label_item.halign = 'center'
-            # label_item.valign = 'middle'
             label_item = ButtonType4(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
             label_item.bind(on_release=self.generate_summary)
             row_objects.append(label_item)
@@ -275,6 +273,7 @@ class GridScreen(Screen):
             
             #Add Buttons
             for j in range(len(persons)):
+
                 bxlt = RelativeLayout(size_hint=(None, None), height=self.height_item, width = self.width_item)
                 button = ButtonType4(text='Add' )
                 button.bind(on_press=self.change_color)
@@ -287,22 +286,36 @@ class GridScreen(Screen):
                 bxlt.add_widget(label_qty)
                 
                 layout_right.add_widget(bxlt)
-                
+                item_bxlt = items[i][0].parent
+                person_bxlt = persons[j].parent
                 my_dict = {
                     'id': button,
                     'state': False,
                     'lock': False,
                     'modifier': 1,
                     'modifier_id': label_qty,
+                    'modifier_texture_size': [0,0],
                     'value': 0.00,
                     'row': i,
-                    'col': j
+                    'col': j,
+                    'item_bxlt': items[i][0].parent,
+                    'person_bxlt': persons[j].parent
                 }
-                self.button_grid.append(my_dict)
+                new_btn_grd.append(my_dict)
         
         Clock.schedule_once(lambda dt, bxlt=bxlt: self.align_label_btn(layout_right), 0.05)
         
-            
+        merge_btn_grd = self.merge_btn_grd(self.button_grid, new_btn_grd)
+        self.button_grid = []
+        self.button_grid = merge_btn_grd
+
+
+        print('\n--------------------MERGED GRID--------------------\n')
+        for my_dict in merge_btn_grd:
+            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            print('\n')
+            label = my_dict['modifier_id']
+            label.color = [1,1,1,1]
         #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
         label_total = self.ids.grd_left_ftr_sbtotal_label_total
@@ -313,27 +326,87 @@ class GridScreen(Screen):
         
         self.import_mnscreen_totals()
         self.update_ftr_totals()
+        self.load_btn_state()
+    
+    def merge_btn_grd(self, old_grd, new_grd):
+        # if len(old_grd) > 0:
+        #     print('\n--------------------OLD GRID--------------------\n')
+        #     for my_dict in old_grd:
+        #         pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+        #         print('\n')
+            
+        #     print('\n--------------------NEW GRID--------------------\n')
+        #     for my_dict in new_grd:
+        #         pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+        #         print('\n')
+
+        if len(old_grd) > 0:
+            for old_dict in old_grd:
+                old_item_bxlt = old_dict['item_bxlt']
+                old_person_bxlt = old_dict['person_bxlt']
+
+                for new_dict in new_grd:
+                    new_item_bxlt = new_dict['item_bxlt']
+                    new_person_bxlt = new_dict['person_bxlt']
+
+                    if old_item_bxlt == new_item_bxlt and old_person_bxlt == new_person_bxlt:
+                        new_dict['state'] = old_dict['state']
+                        new_dict['lock'] = old_dict['lock']
+                        new_dict['modifier'] = old_dict['modifier']
+                        new_dict['value'] = old_dict['value']
+                        new_dict['modifier_texture_size'] = old_dict['modifier_texture_size']
+                        
+
+            # print('\n--------------------MERGED GRID--------------------\n')
+            # for my_dict in new_grd:
+            #     pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            #     print('\n')
+        
+        return new_grd
+    
+    def load_btn_state(self):
+        btn_grd = self.button_grid
+        
+        for my_dict in btn_grd:
+            # pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            # print('\n')
+            if my_dict['state'] == True:
+                btn = my_dict['id']
+                self.change_color(btn)
+
+            if my_dict['modifier'] != 1:
+                label = my_dict['modifier_id']
+                label.text = str(my_dict['modifier'])
+            
+            if my_dict['modifier'] == 'C':
+                label = my_dict['modifier_id']
+                label.text = str(my_dict['modifier'])
+                btn = my_dict['id']
+                btn.text = my_dict['value']
 
     def align_label_btn(self, layout_right):
-        bxlt = self.ids.grd_right_scview_grdlt
-        for i in range(len(bxlt.children), 0, -1):
-            for btn in layout_right.children:
-                ftlt = bxlt.children[i-1]
-                label = ftlt.children[0]
-                label.text_size = label.size
-                
-                x_pos = btn.width-label.texture_size[0]
-                y_pos = btn.height-label.texture_size[1]
-                label.pos = (x_pos, y_pos)
+        btn_arr = []
+        for ftlt in layout_right.children:
+            # ftlt = bxlt.children[i-1]
+            label = ftlt.children[0]
+            btn = ftlt.children[1]
+            label.text_size = label.size
+            
+            x_pos = ftlt.width-label.texture_size[0]
+            y_pos = ftlt.height-label.texture_size[1]
+            label.pos = (x_pos, y_pos)
+            label.color = [1,1,1,1]
 
-                btn_x, btn_y = btn.pos
-                with label.canvas.before:
-                    Color(1, 0, 0, 1)  # Set the color of the circle (red in this case)
-                    circle = Ellipse(size=(label.texture_size[1],label.texture_size[1]), pos=(x_pos-(label.texture_size[0]/2),y_pos))
-                
-                # print(f'BUTTN | size: {btn.size} | pos: {btn.pos} | pos_hint {btn.pos_hint}')
-                # print(f'LABEL | size: {label.size} | pos: {label.pos} | pos_hint: {label.pos_hint} | texture_size {label.texture_size} | text_size {label.text_size}')
-                # print(f'CIRCL | size: {circle.size} | pos: {circle.pos}')
+            self.change_dict_val(btn, 'modifier_texture_size', label.texture_size)
+            btn_arr.append(btn)
+
+        # count = 0
+        # for my_dict in self.button_grid:
+        #     pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+        #     print('\n')
+        #     label = self.get_dict_val(btn_arr[count],'modifier_id')
+        #     label.color = [1,1,1,1]
+        #     count += 1
 
     def align_label_bxlt(self, bxlt):
         label_item = bxlt.children[len(bxlt.children)-1]
@@ -376,6 +449,13 @@ class GridScreen(Screen):
             if my_dict['id'] == id:
                 return my_dict[key]
 
+    def get_all_instance(self, key, val):
+        arr = []
+        for my_dict in self.button_grid:
+            if my_dict[key] == val:
+                arr.append(my_dict)
+        return arr
+
     def change_color(self, instance):
         grdlayout = instance.parent
         index = instance.parent.children.index(instance)
@@ -386,6 +466,8 @@ class GridScreen(Screen):
             # new_button.bind(on_release = self.change_color)
             self.change_dict_val(instance, 'id', new_button)
             self.change_dict_val(new_button,'state', True)
+            # row = self.get_dict_val(new_button,'row')
+            # self.update_label_row(row)
         else:
             new_button = ButtonType4(text='Add', size_hint=(None, None), height=self.height_item, width = self.width_item)
             new_button.bind(on_press=self.change_color)
@@ -397,11 +479,16 @@ class GridScreen(Screen):
             self.change_dict_val(new_button, 'lock', False)
             label = self.get_dict_val(new_button, 'modifier_id')
             label.text = '1'
+            label.color = [1,1,1,0]
+            label.canvas.before.clear()
+
+        row = self.get_dict_val(new_button,'row')
+        self.update_label_row(row)
 
         grdlayout.add_widget(new_button, index)
-        for btn in self.button_grid:
-            # pprint.pprint(btn)
-            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(btn)
+        # for btn in self.button_grid:
+        #     # pprint.pprint(btn)
+        #     pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(btn)
         self.update_btn_totals()
 
     def get_btn_state(self, id, state):
@@ -412,6 +499,43 @@ class GridScreen(Screen):
         else:
             self.change_color(id)
     
+    def show_label_modifier(self, btn, label):
+        lbl_texture_size = self.get_dict_val(btn, 'modifier_texture_size')
+        max_size = max(lbl_texture_size[0],lbl_texture_size[1])
+        x_pos = btn.width-lbl_texture_size[0]
+        y_pos = btn.height-lbl_texture_size[1]
+        # label.pos = (x_pos, y_pos)
+        
+        circle_pos = [x_pos-(lbl_texture_size[0]/2),y_pos]
+        circle_size = [max_size,max_size]
+
+        label.canvas.before.clear()
+        label.color = [1,1,1,1]
+        
+        with label.canvas.before:
+            Color(245/255,73/255,156/255,1)  # Set the color of the circle (red in this case)
+            circle = Ellipse(size=[max_size,max_size], pos=(x_pos-(lbl_texture_size[0]/2),y_pos))
+
+    def update_label_row(self, row):
+        row_arr = self.get_all_instance('row', row)
+        label_on = False
+        label_lock = False
+        for my_dict in row_arr:
+            if my_dict['state'] == True:
+                label = my_dict['modifier_id']
+                if label.color == [1,1,1,1]:
+                    label_on = True
+            if my_dict['lock'] == True:
+                label_lock = True
+
+        if label_on == True:
+            for my_dict in row_arr:
+                if my_dict['state'] == True:
+                    btn = my_dict['id']
+                    label = my_dict['modifier_id']
+                    # label.color = [1,1,1,1]
+                    self.show_label_modifier(btn,label)            
+
     def update_btn(self, btn_id, price_text, count_text):
         price_change = False
         count_change = False
@@ -422,16 +546,36 @@ class GridScreen(Screen):
             count_change = True
         
         if price_change == True:
+            # print('PRICE_CHANGE')
             btn_id.text = price_text
             self.change_dict_val(btn_id, 'value', price_text)
             self.change_dict_val(btn_id, 'lock', True)
-
+            self.change_dict_val(btn_id, 'modifier', 'C')
+            label.color=(1,1,1,1)
+            label.text = 'C'
+            row = self.get_dict_val(btn_id,'row')
+            self.update_label_row(row)
         if count_change == True:
+            # print('COUNT_CHANGE')
             label.text = count_text
             self.change_dict_val(btn_id, 'modifier', count_text)
+            if label.text != 1:
+                label.color=(1,1,1,1)
+                row = self.get_dict_val(btn_id,'row')
+                self.update_label_row(row)
+            else:
+                label.color = (1,1,1,0)
             
         if price_change == True or count_change == True:
             self.update_btn_totals()
+
+        if price_change == False and count_text == '1':
+            if self.get_dict_val(btn_id, 'lock') == True:
+                label.color=(1,1,1,1)
+                label.text = 'C'
+                row = self.get_dict_val(btn_id,'row')
+                self.update_label_row(row)
+
     def update_btn_totals(self):
         #self.button_grid
         grd_right = self.get_btn_arr()
@@ -744,6 +888,19 @@ class GridScreen(Screen):
 
         popup = SummaryPopup(label_text=summary)
         popup.open()
+    
+    def generate_all_summary(self):
+        index = 0
+        grd_right_hdr = self.grd_to_arr(self.ids.grd_right_hdr_scview_grdlt)
+        summary = ''
+        for i in range(len(grd_right_hdr)):
+            if i == 0:
+                summary = self.get_person_total(i)
+            else:
+                summary = summary + '\n\n' + self.get_person_total(i)
+
+        popup = SummaryPopup(label_text=summary)
+        popup.open()
 
     def get_person_total(self,index_pers):
         grd_right = self.get_btn_arr()
@@ -757,7 +914,7 @@ class GridScreen(Screen):
         prices = []
 
         for i in range(len(grd_right)):
-                item = grd_right[i][index_pers]
+                item = grd_right[i][index_pers][0]
                 if item.text.replace('.','').isnumeric():
                     item_desc = grd_left[i][0]
                     items.append(item_desc.text)
@@ -817,7 +974,10 @@ class ButtonPopup(Popup):
         self.size_hint = (0.9, 0.3)
         self.pos_hint = {"top": 0.7}
         self.initial_val = btn_id.text
-        self.initial_modifer = lbl_id.text
+        if lbl_id.text == 'C':
+            self.initial_modifer = '1'
+        else:
+            self.initial_modifer = lbl_id.text
         bxlt = BoxLayoutType1(orientation='vertical', spacing=10, padding =10)
         bxlt_top = BoxLayout(orientation='horizontal', size_hint_y=0.2)
         bxlt_mid = BoxLayout(orientation = 'vertical', size_hint_y=0.6, spacing=10)
@@ -1175,7 +1335,7 @@ class SummaryPopup(Popup):
         self.pos_hint = {"top": 0.8}
         self.mytext = label_text
         bxlt = BoxLayoutType1(orientation='vertical', padding=10)
-        scroll_view = ScrollView(do_scroll_y=True,do_scroll_x=False)
+        scroll_view = ScrollView(do_scroll_y=True,do_scroll_x=False, effect_cls='ScrollEffect')
         label = Label(text=label_text, size_hint_y= None)
         label.height = label.texture_size[1]
         label.padding = 10,10
@@ -1316,8 +1476,6 @@ class ButtonType4(Button):
 class ButtonType5(Button):
     def __init__(self, **kwargs):
         super(ButtonType5, self).__init__(**kwargs)
-
-
     
 class SplitReceipt(App):
     def build(self):
