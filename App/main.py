@@ -303,19 +303,21 @@ class GridScreen(Screen):
                 }
                 new_btn_grd.append(my_dict)
         
+        
         Clock.schedule_once(lambda dt, bxlt=bxlt: self.align_label_btn(layout_right), 0.05)
         
+
         merge_btn_grd = self.merge_btn_grd(self.button_grid, new_btn_grd)
         self.button_grid = []
         self.button_grid = merge_btn_grd
 
 
-        print('\n--------------------MERGED GRID--------------------\n')
-        for my_dict in merge_btn_grd:
-            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
-            print('\n')
-            label = my_dict['modifier_id']
-            label.color = [1,1,1,1]
+        # print('\n--------------------MERGED GRID--------------------\n')
+        # for my_dict in merge_btn_grd:
+        #     pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+        #     print('\n')
+        #     label = my_dict['modifier_id']
+        #     label.color = [1,1,1,1]
         #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
         label_total = self.ids.grd_left_ftr_sbtotal_label_total
@@ -326,7 +328,7 @@ class GridScreen(Screen):
         
         self.import_mnscreen_totals()
         self.update_ftr_totals()
-        self.load_btn_state()
+        Clock.schedule_once(lambda dt: self.load_btn_state(), 0.05)
     
     def merge_btn_grd(self, old_grd, new_grd):
         # if len(old_grd) > 0:
@@ -375,14 +377,20 @@ class GridScreen(Screen):
                 self.change_color(btn)
 
             if my_dict['modifier'] != 1:
+                btn = my_dict['id']
                 label = my_dict['modifier_id']
                 label.text = str(my_dict['modifier'])
+                label.color = [1,1,1,1]
+
+                row = self.get_dict_val(btn,'row')
+                self.update_label_row(row)
             
             if my_dict['modifier'] == 'C':
                 label = my_dict['modifier_id']
                 label.text = str(my_dict['modifier'])
                 btn = my_dict['id']
                 btn.text = my_dict['value']
+                self.show_label_modifier(btn, label)
 
     def align_label_btn(self, layout_right):
         btn_arr = []
@@ -395,7 +403,7 @@ class GridScreen(Screen):
             x_pos = ftlt.width-label.texture_size[0]
             y_pos = ftlt.height-label.texture_size[1]
             label.pos = (x_pos, y_pos)
-            label.color = [1,1,1,1]
+            label.color = [1,1,1,0]
 
             self.change_dict_val(btn, 'modifier_texture_size', label.texture_size)
             btn_arr.append(btn)
