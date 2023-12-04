@@ -44,6 +44,14 @@ class MainScreen(Screen):
         self.height_item = window_height * 0.05
         self.width_item = window_width * 0.18519
 
+    def on_enter(self):
+        if self.name == 'main_screen':
+            item_grid = self.ids.mn_left_scview_grdlt
+            self.additem_left_auto()
+
+            self.addperson_right_auto('')
+        
+
     def switch_to_grid_screen(self):
         if len(self.input_items) >= 2 and len(self.input_persons) >=2:
             self.manager.current = 'grid_screen'
@@ -103,15 +111,35 @@ class MainScreen(Screen):
                 text_price ='0.00'
             self.additem_left(text_item, text_price)
     
+    def additem_left_auto(self):
+        data_grid = self.ids.mn_left_scview_grdlt
+        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        
+        # txtinput_item = ItemTextInputAuto(on_dismiss_callback=self.additem_left_auto_dismiss, )
+        # txtinput_item.text = text_item
+        # bxlt.add_widget(txtinput_item)
+        data_grid.add_widget(bxlt)
+
+    def additem_left_auto_dismiss(self, state):
+        
+        data_grid = self.ids.mn_left_scview_grdlt
+        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        
+        data_grid.add_widget(bxlt)
+
+        if state == "Enter":
+            txtinput = bxlt.children[1]
+            txtinput.focus = True
+   
     def additem_left(self, text_item, text_price):
         data_grid = self.ids.mn_left_scview_grdlt
         bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
         
-        txtinput_item = ClearTextInput(multiline=False, size_hint=(1, None), height=self.height_item)
+        txtinput_item = ClearTextInput(multiline=False, size_hint=(0.6, None), height=self.height_item)
         txtinput_item.text = text_item
         label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
         label_mid.color = 1,1,1,1
-        txtinput_price = CurrencyTextInput(multiline=False, size_hint=(0.6, None), height=self.height_item)
+        txtinput_price = CurrencyTextInput(multiline=False, size_hint=(0.3, None), height=self.height_item)
         txtinput_price.text = text_price
         txtinput_price.bind(text=self.update_totals)
 
@@ -124,6 +152,29 @@ class MainScreen(Screen):
         self.input_items.append([txtinput_item, txtinput_price])
         self.update_totals(txtinput_price, txtinput_price.text)
     
+    def addperson_right_auto(self, text_person):
+        data_grid = self.ids.mn_right_scview_grdlt
+        height_item = self.height_item
+        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
+        txtinput_pers = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss, size_hint=(1, None), height=height_item)
+        txtinput_pers.text = text_person
+
+        bxlt.add_widget(txtinput_pers)
+        data_grid.add_widget(bxlt)
+        self.input_persons.append(txtinput_pers)
+
+    def addperson_right_auto_dismiss(self,state):
+        data_grid = self.ids.mn_right_scview_grdlt
+        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
+        
+        txtinput_item = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss,  multiline=False, size_hint=(1, None), height=self.height_item)
+        txtinput_item.text = ''
+        bxlt.add_widget(txtinput_item)
+        data_grid.add_widget(bxlt)
+
+        if state == "Enter":
+            txtinput_item.focus = True
+
     def addperson_popup(self):
         popup = AddPersonPopup(on_dismiss_callback=self.addperson_popup_dismiss)
         popup.open()
@@ -331,17 +382,6 @@ class GridScreen(Screen):
         Clock.schedule_once(lambda dt: self.load_btn_state(), 0.05)
     
     def merge_btn_grd(self, old_grd, new_grd):
-        # if len(old_grd) > 0:
-        #     print('\n--------------------OLD GRID--------------------\n')
-        #     for my_dict in old_grd:
-        #         pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
-        #         print('\n')
-            
-        #     print('\n--------------------NEW GRID--------------------\n')
-        #     for my_dict in new_grd:
-        #         pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
-        #         print('\n')
-
         if len(old_grd) > 0:
             for old_dict in old_grd:
                 old_item_bxlt = old_dict['item_bxlt']
@@ -357,12 +397,6 @@ class GridScreen(Screen):
                         new_dict['modifier'] = old_dict['modifier']
                         new_dict['value'] = old_dict['value']
                         new_dict['modifier_texture_size'] = old_dict['modifier_texture_size']
-                        
-
-            # print('\n--------------------MERGED GRID--------------------\n')
-            # for my_dict in new_grd:
-            #     pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
-            #     print('\n')
         
         return new_grd
     
@@ -1181,6 +1215,7 @@ class AddItemPopup(Popup):
 
     def txtinput_item_validate(self,instance):
         self.txtinput_price.focus = True
+
     def dismiss_popup(self, instance):
         # Call the on_dismiss_callback and pass the entered text
         self.on_dismiss_callback(self.txtinput_item.text, self.txtinput_price.text)
@@ -1394,8 +1429,33 @@ class PersonTextInput(TextInput):
         autofit_txtinput = MyFunctions()
         Clock.schedule_once(lambda dt: autofit_txtinput.txtinput_autofit_person(self), 0.05)
 
+class PersonTextInputAuto(TextInput):
+    def __init__(self, on_dismiss_callback, **kwargs):
+        super(PersonTextInputAuto, self).__init__(**kwargs)
+        self.on_dismiss_callback = on_dismiss_callback
+        self.background_color=(0,0,0,0)
+        self.foreground_color=(1,1,1,1)
+        self.multiline = False
+        self.hint_text = 'Person'
+        self.bind(on_text_validate=self.txtinput_item_validate, focus=self.on_text_input_focus)
+        
+        autofit_txtinput = MyFunctions()
+        Clock.schedule_once(lambda dt: autofit_txtinput.txtinput_autofit_person(self), 0.05)
+
+    def txtinput_item_validate(self,instance):
+        self.unbind(focus=self.on_text_input_focus)
+        self.unbind(on_text_validate=self.txtinput_item_validate)
+        self.on_dismiss_callback('Enter')
+
+    def on_text_input_focus(self, instance, value):
+        if value == False:
+            if self.text != '':
+                self.unbind(focus=self.on_text_input_focus)
+                self.unbind(on_text_validate=self.txtinput_item_validate)
+                self.on_dismiss_callback('Unfocus')
+
 class ClearTextInput(TextInput):
-     def __init__(self, **kwargs):
+    def __init__(self, **kwargs):
         super(ClearTextInput, self).__init__(**kwargs)
         self.background_color=(0,0,0,0)
         self.foreground_color=(1,1,1,1)
@@ -1403,6 +1463,64 @@ class ClearTextInput(TextInput):
         autofit_txtinput = MyFunctions()
         Clock.schedule_once(lambda dt: autofit_txtinput.txtinput_autofit_item(self), 0.05)
 
+
+class ItemBoxLayoutAuto(BoxLayout):
+    def __init__(self, on_dismiss_callback, item_height, **kwargs):
+        super(ItemBoxLayoutAuto, self).__init__(**kwargs)
+        with self.canvas.before:
+            Color(0,0,0,0.3)
+            self.shadow = BoxShadow(pos=[0,0],size=self.size,offset=(0,-10),spread_radius=(-10,-10),border_radius=(10,10,10,10),blur_radius=20)
+            Color(1, 1, 1, 1)
+            self.roundrect = RoundedRectangle(source='imgs/layout_color_1.png', pos=[0,0], size=self.size, radius=[10])
+
+        self.bind(pos=self.update_shadow, size=self.update_shadow)
+
+        self.on_dismiss_callback = on_dismiss_callback
+        self.background_color=(0,0,0,0)
+        self.foreground_color=(1,1,1,1)
+        self.orientation = 'horizontal'
+        self.still_input = False
+        self.txtinput_item = ClearTextInput(multiline=False, size_hint=(0.6, None), height=item_height)
+        self.txtinput_item.bind(on_text_validate=self.go_to_next, focus=self.on_text_input_focus)
+        label_mid = Label(text='$', size_hint=(0.1,None), height=item_height)
+        label_mid.color = 1,1,1,1
+        self.txtinput_price = CurrencyTextInput(multiline=False, size_hint=(0.3, None), height=item_height)
+        self.txtinput_price.bind(on_text_validate=self.txtinput_item_validate, focus=self.on_text_input_focus)
+        
+        self.add_widget(self.txtinput_item)
+        self.add_widget(label_mid)
+        self.add_widget(self.txtinput_price)
+
+    def update_shadow(self,*args):
+        self.shadow.pos = self.pos
+        self.roundrect.pos = self.pos
+        self.shadow.size = self.size
+        self.roundrect.size = self.size
+
+    def go_to_next(self, instance):
+        # if self.txtinput_price.text == '':
+        self.txtinput_price.focus = True
+
+    def txtinput_item_validate(self,instance):
+        self.txtinput_item.unbind(focus=self.on_text_input_focus)
+        self.txtinput_item.unbind(on_text_validate=self.txtinput_item_validate)
+
+        self.txtinput_price.unbind(focus=self.on_text_input_focus)
+        self.txtinput_price.unbind(on_text_validate=self.txtinput_item_validate)
+
+        self.on_dismiss_callback('Enter')
+
+    def on_text_input_focus(self, instance, value):
+        if value == False:
+            if self.txtinput_item.text != '' or self.txtinput_price.text != '':
+                if self.txtinput_price.focus == False and self.txtinput_item.focus == False:
+                    self.txtinput_item.unbind(focus=self.on_text_input_focus)
+                    self.txtinput_item.unbind(on_text_validate=self.txtinput_item_validate)
+
+                    self.txtinput_price.unbind(focus=self.on_text_input_focus)
+                    self.txtinput_price.unbind(on_text_validate=self.txtinput_item_validate)
+                    self.on_dismiss_callback('Unfocus')
+        
 class CurrencyTextInput(TextInput):
     def __init__(self, **kwargs):
         super(CurrencyTextInput, self).__init__(**kwargs)
@@ -1418,7 +1536,7 @@ class CurrencyTextInput(TextInput):
 
     def on_text(self, instance, value):
         if not value:
-            formatted_text =''
+            formatted_text = ''
         else:
             value = value.replace('.','')
             value = str(int(value))
@@ -1429,12 +1547,17 @@ class CurrencyTextInput(TextInput):
         else:
             if len(value) > 0:
                 if len(value) == 2:
+                    print(f'LEN: {len(value)}')
                     formatted_text = '0.' + value
                 elif len(value) == 1:
-                    formatted_text = '0.0' + value
+                    if float(value) == 0.00:
+                        formatted_text =''
+                    else:
+                        formatted_text = '0.0' + value
             else: 
                 formatted_text = value
 
+        print(f'Formatted: {formatted_text}')
         # Updates the text and cursor position
         self.multiline = False
         self.text = formatted_text
