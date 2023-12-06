@@ -43,6 +43,8 @@ class MainScreen(Screen):
         window_width, window_height = Window.size
         self.height_item = window_height * 0.05
         self.width_item = window_width * 0.18519
+        self.items = []
+        self.persons = []
 
     def on_enter(self):
         if self.name == 'main_screen':
@@ -51,15 +53,28 @@ class MainScreen(Screen):
 
             self.addperson_right_auto('')
         
+    def on_pre_leave(self):
+        item_grid = self.ids.mn_left_scview_grdlt
+        for bxlt in item_grid.children:
+            item_txtbox = bxlt.children[2]
+            price_txtbox = bxlt.children[0]
+
+            if price_txtbox.text == '' and item_txtbox.text != '':
+                price_txtbox.text = '0.00'
+            elif price_txtbox.text != '' or item_txtbox.text !='':
+                self.input_items.append([item_txtbox, price_txtbox])
 
     def switch_to_grid_screen(self):
-        if len(self.input_items) >= 2 and len(self.input_persons) >=2:
-            self.manager.current = 'grid_screen'
-            self.manager.transition.direction = "left"
-        else:
-            popup = WarningPopup(label_text='Please add more items/person\nMinimum of 2 items and 2 persons')
-            popup.open()
+        # if len(self.input_items) >= 2 and len(self.input_persons) >=2:
+        #     self.manager.current = 'grid_screen'
+        #     self.manager.transition.direction = "left"
+        # else:
+        #     popup = WarningPopup(label_text='Please add more items/person\nMinimum of 2 items and 2 persons')
+        #     popup.open()
 
+        self.manager.current = 'grid_screen'
+        self.manager.transition.direction = "left"
+        
     def add_preset(self):
         self.additem_left("Item A", "50.00")
         self.additem_left("Item B", "30.00")
@@ -118,6 +133,7 @@ class MainScreen(Screen):
         # txtinput_item = ItemTextInputAuto(on_dismiss_callback=self.additem_left_auto_dismiss, )
         # txtinput_item.text = text_item
         # bxlt.add_widget(txtinput_item)
+        
         data_grid.add_widget(bxlt)
 
     def additem_left_auto_dismiss(self, state):
@@ -128,8 +144,9 @@ class MainScreen(Screen):
         data_grid.add_widget(bxlt)
 
         if state == "Enter":
-            txtinput = bxlt.children[1]
+            txtinput = bxlt.children[2]
             txtinput.focus = True
+        
    
     def additem_left(self, text_item, text_price):
         data_grid = self.ids.mn_left_scview_grdlt
@@ -149,7 +166,7 @@ class MainScreen(Screen):
 
         data_grid.add_widget(bxlt)
         
-        self.input_items.append([txtinput_item, txtinput_price])
+        # self.input_items.append([txtinput_item, txtinput_price])
         self.update_totals(txtinput_price, txtinput_price.text)
     
     def addperson_right_auto(self, text_person):
@@ -1547,7 +1564,6 @@ class CurrencyTextInput(TextInput):
         else:
             if len(value) > 0:
                 if len(value) == 2:
-                    print(f'LEN: {len(value)}')
                     formatted_text = '0.' + value
                 elif len(value) == 1:
                     if float(value) == 0.00:
@@ -1557,7 +1573,7 @@ class CurrencyTextInput(TextInput):
             else: 
                 formatted_text = value
 
-        print(f'Formatted: {formatted_text}')
+        
         # Updates the text and cursor position
         self.multiline = False
         self.text = formatted_text
