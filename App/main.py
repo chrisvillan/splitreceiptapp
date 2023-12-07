@@ -38,31 +38,19 @@ import json
 class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
-        self.input_items = []
-        self.input_persons= []
         window_width, window_height = Window.size
         self.height_item = window_height * 0.05
         self.width_item = window_width * 0.18519
         self.items = []
         self.persons = []
+        self.add_init = False
 
     def on_enter(self):
         if self.name == 'main_screen':
-            item_grid = self.ids.mn_left_scview_grdlt
-            self.additem_left_auto()
-
-            self.addperson_right_auto('')
-        
-    def on_pre_leave(self):
-        item_grid = self.ids.mn_left_scview_grdlt
-        for bxlt in item_grid.children:
-            item_txtbox = bxlt.children[2]
-            price_txtbox = bxlt.children[0]
-
-            if price_txtbox.text == '' and item_txtbox.text != '':
-                price_txtbox.text = '0.00'
-            elif price_txtbox.text != '' or item_txtbox.text !='':
-                self.input_items.append([item_txtbox, price_txtbox])
+            if self.add_init == False:
+                self.additem_left_init()
+                self.addperson_right_init()
+                self.add_init = True
 
     def switch_to_grid_screen(self):
         # if len(self.input_items) >= 2 and len(self.input_persons) >=2:
@@ -74,22 +62,258 @@ class MainScreen(Screen):
 
         self.manager.current = 'grid_screen'
         self.manager.transition.direction = "left"
-        
-    def add_preset(self):
-        self.additem_left("Item A", "50.00")
-        self.additem_left("Item B", "30.00")
-        self.additem_left("Item C", "20.00")
 
-        self.addperson_right("Alex")
-        self.addperson_right("Bob")
-        self.addperson_right("Cindy")
+    #Preset
+    def add_preset_auto(self):
+        preset_item = []
+        preset_person = []
+
+        preset_item.append(['Item A', '50.00'])
+        preset_item.append(['Item B', '30.00'])
+        preset_item.append(['Item C', '20.00'])
+
+        preset_person.append('Alex')
+        preset_person.append('Bob')
+        preset_person.append('Chris')
+
+        for item in preset_item:
+            self.additem_left(item[0],item[1])
+            
+        for person in preset_person:
+           self.addperson_right(person)
 
         tax_btn = self.ids.mn_left_tax_txinput
         tip_btn = self.ids.mn_left_tip_txinput
         tax_btn.text = "7.75"
         tip_btn.text = "15.00"
+        
+        self.update_totals()
+ 
+    # Add Item
+    def additem_left(self, text_item, text_price):
+        left_grid = self.ids.mn_left_scview_grdlt
+    
+        bxlt = left_grid.children[0]
+        txtinput_item = bxlt.children[2]
+        txtinput_price = bxlt.children[0]
+
+        txtinput_item.focus = True
+        txtinput_item.text = text_item
+        txtinput_price.focus = True
+        txtinput_price.text = text_price
+        txtinput_price.focus = False
+  
+    def additem_left_init(self):
+        print('ADD ITEM INIT')
+        data_grid = self.ids.mn_left_scview_grdlt
+        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        
+        data_grid.add_widget(bxlt)
+
+        txtinput_item = bxlt.children[2]
+        txtinput_price = bxlt.children[0]
+        
+        my_dict ={
+            'id': bxlt,
+            'item_id': txtinput_item,
+            'price_id': txtinput_price,
+            'item_val': '',
+            'price_val': 0.0,
+            'row': 0
+            }    
+    
+        self.items.append(my_dict)
+        
+    def additem_left_auto_dismiss(self, state):
+        
+        data_grid = self.ids.mn_left_scview_grdlt
+        bxlt_prev = data_grid.children[0]
+        txtinput_item = bxlt_prev.children[2]
+        txtinput_price = bxlt_prev.children[0]
+        price = 0.00
+
+        self.change_dict_val(bxlt_prev, 'item_val',txtinput_item.text,self.items)
+        
+        if txtinput_price.text != '':
+            price = float(txtinput_price.text)
+        
+        self.change_dict_val(bxlt_prev, 'price_val',price,self.items)
+
+        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        data_grid.add_widget(bxlt)
+
+        txtinput_item = bxlt.children[2]
+        txtinput_price = bxlt.children[0]
+
+        my_dict ={
+            'id': bxlt,
+            'item_id': txtinput_item,
+            'price_id': txtinput_price,
+            'item_val': '',
+            'price_val': 0.0,
+            'row': 0
+            }    
+    
+        self.items.append(my_dict)
+
+        if state == "Enter":
+            txtinput = bxlt.children[2]
+            txtinput.focus = True
+         
+    # Add Person
+    def addperson_right(self, text_person):
+        right_grid = self.ids.mn_right_scview_grdlt
+
+        bxlt = right_grid.children[0]
+        txtinput_person = bxlt.children[0]
+
+        txtinput_person.focus = True
+        txtinput_person.text = text_person
+        txtinput_person.focus = False
+
+    def addperson_right_init(self):
+        data_grid = self.ids.mn_right_scview_grdlt
+        
+        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
+        txtinput_pers = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss, size_hint=(1, None), height=self.height_item)
+        
+        bxlt.add_widget(txtinput_pers)
+        data_grid.add_widget(bxlt)
+
+        my_dict = {
+            'id': bxlt,
+            'person_id': txtinput_pers,
+            'value': '',
+            'row': 0
+        }
+        self.persons.append(my_dict)
+
+    def addperson_right_auto_dismiss(self,state):
+        data_grid = self.ids.mn_right_scview_grdlt
+        bxlt_prev = data_grid.children[0]
+        txtinput_pers = bxlt_prev.children[0]
+
+        self.change_dict_val(bxlt_prev,'value',txtinput_pers.text,self.persons)
+        
+        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
+        
+        txtinput_pers = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss,  multiline=False, size_hint=(1, None), height=self.height_item)
+        
+        bxlt.add_widget(txtinput_pers)
+        data_grid.add_widget(bxlt)
+
+        my_dict = {
+            'id': bxlt,
+            'person_id': txtinput_pers,
+            'value': '',
+            'row': 0
+        }
+        self.persons.append(my_dict)
+
+        if state == "Enter":
+            txtinput_pers.focus = True
+
+    # Price calculations
+    def update_tax_popup(self):
+        taxtip_prices = []
+        taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
+        taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
+        popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
+        popup.txtinput_tax_price.focus = True
+        popup.open()    
+    
+    def update_tip_popup(self):
+        taxtip_prices = []
+        taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
+        taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
+        print(taxtip_prices)
+        popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
+        popup.txtinput_tip_price.focus = True
+        popup.open() 
+
+    def update_taxtip_popup_dismiss(self,tax_desc, tax_price, tip_desc, tip_price):
+        tax_btn = self.ids.mn_left_tax_txinput
+        tip_btn = self.ids.mn_left_tip_txinput
+        tax_btn.text = tax_price.text
+        tip_btn.text = tip_price.text
         self.update_totals(self, tax_btn.text)
 
+    def update_totals(self):
+
+        items_arr = []
+        for my_dict in self.items:
+            if my_dict['item_val'] != '':
+                if my_dict['price_val'] != 0.0:
+                    items_arr.append([my_dict['item_val'], my_dict['price_val']])
+                else:
+                    items_arr.append([my_dict['item_val'], 0.0])
+            else:
+                if my_dict['price_val'] != 0.0:
+                    items_arr.append([my_dict['item_val'], my_dict['price_val']])
+        
+        prices = []
+        for i in range(len(items_arr)):
+            prices.append(items_arr[i][1])
+
+        subtotal = 0.00
+        grandtotal = 0.00
+        tax = 0.00
+        tip = 0.00
+
+        tax_txtinput = self.ids.mn_left_tax_txinput
+        tip_txtinput = self.ids.mn_left_tip_txinput
+
+        for p in prices:
+            subtotal = subtotal + p
+
+        if subtotal != 0:
+            if tax_txtinput.text != "":
+                tax = float(tax_txtinput.text)
+            if tip_txtinput.text != "":
+                tip = float(tip_txtinput.text)
+            
+        if tax != 0:
+            grandtotal = grandtotal + tax
+        if tip != 0:
+            grandtotal = grandtotal + tip
+        
+        if subtotal != 0:
+            grandtotal = grandtotal + subtotal
+
+            tax_factor = tax/subtotal
+            tip_factor = tip/subtotal
+            tax = tax_factor*100
+            tip = tip_factor*100
+
+        self.ids.mn_left_sbtotal_label_price.text = f'{subtotal:.2f}'
+        self.ids.mn_left_tax_label_desc.text = f'Tax ({tax:.2f}%)'
+        self.ids.mn_left_tip_label_desc.text = f'Tip ({tip:.2f}%)'
+        self.ids.mn_left_grtotal_label_price.text = f'{grandtotal:.2f}'
+
+    # data dict functions
+    def print_dict(self):
+        print('\n--------------------ITEMS--------------------\n')
+        for my_dict in self.items:
+            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            print('\n')
+
+        print('\n--------------------PERSON--------------------\n')
+        for my_dict in self.persons:
+            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            print('\n')
+
+    def change_dict_val(self, id, key, val, grid):
+        for my_dict in grid:
+            if my_dict['id'] == id:
+                my_dict[key] = val
+                break
+    
+    def get_dict_val(self,id,key, grid):
+        for my_dict in grid:
+            if my_dict['id'] == id:
+                return my_dict[key]
+
+    # Clear Items
     def clear_all_items(self):
         self.input_persons= []
         self.ids.mn_right_scview_grdlt.clear_widgets()
@@ -116,6 +340,7 @@ class MainScreen(Screen):
         self.input_persons= []
         self.ids.mn_right_scview_grdlt.clear_widgets()
 
+#---Unused popups
     def additem_popup(self):
         popup = AddItemPopup(on_dismiss_callback=self.additem_popup_dismiss)
         popup.open()
@@ -125,72 +350,6 @@ class MainScreen(Screen):
             if text_price == '':
                 text_price ='0.00'
             self.additem_left(text_item, text_price)
-    
-    def additem_left_auto(self):
-        data_grid = self.ids.mn_left_scview_grdlt
-        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
-        
-        # txtinput_item = ItemTextInputAuto(on_dismiss_callback=self.additem_left_auto_dismiss, )
-        # txtinput_item.text = text_item
-        # bxlt.add_widget(txtinput_item)
-        
-        data_grid.add_widget(bxlt)
-
-    def additem_left_auto_dismiss(self, state):
-        
-        data_grid = self.ids.mn_left_scview_grdlt
-        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
-        
-        data_grid.add_widget(bxlt)
-
-        if state == "Enter":
-            txtinput = bxlt.children[2]
-            txtinput.focus = True
-        
-   
-    def additem_left(self, text_item, text_price):
-        data_grid = self.ids.mn_left_scview_grdlt
-        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
-        
-        txtinput_item = ClearTextInput(multiline=False, size_hint=(0.6, None), height=self.height_item)
-        txtinput_item.text = text_item
-        label_mid = Label(text='$', size_hint=(0.1,None), height=self.height_item)
-        label_mid.color = 1,1,1,1
-        txtinput_price = CurrencyTextInput(multiline=False, size_hint=(0.3, None), height=self.height_item)
-        txtinput_price.text = text_price
-        txtinput_price.bind(text=self.update_totals)
-
-        bxlt.add_widget(txtinput_item)
-        bxlt.add_widget(label_mid)
-        bxlt.add_widget(txtinput_price)
-
-        data_grid.add_widget(bxlt)
-        
-        # self.input_items.append([txtinput_item, txtinput_price])
-        self.update_totals(txtinput_price, txtinput_price.text)
-    
-    def addperson_right_auto(self, text_person):
-        data_grid = self.ids.mn_right_scview_grdlt
-        height_item = self.height_item
-        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
-        txtinput_pers = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss, size_hint=(1, None), height=height_item)
-        txtinput_pers.text = text_person
-
-        bxlt.add_widget(txtinput_pers)
-        data_grid.add_widget(bxlt)
-        self.input_persons.append(txtinput_pers)
-
-    def addperson_right_auto_dismiss(self,state):
-        data_grid = self.ids.mn_right_scview_grdlt
-        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
-        
-        txtinput_item = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss,  multiline=False, size_hint=(1, None), height=self.height_item)
-        txtinput_item.text = ''
-        bxlt.add_widget(txtinput_item)
-        data_grid.add_widget(bxlt)
-
-        if state == "Enter":
-            txtinput_item.focus = True
 
     def addperson_popup(self):
         popup = AddPersonPopup(on_dismiss_callback=self.addperson_popup_dismiss)
@@ -199,98 +358,35 @@ class MainScreen(Screen):
     def addperson_popup_dismiss(self, text_person):
         if text_person !='':
             self.addperson_right(text_person)
-    
-    def addperson_right(self, text_person):
-        data_grid = self.ids.mn_right_scview_grdlt
-        height_item = self.height_item
-        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
-        txtinput_pers = PersonTextInput(size_hint=(1, None), height=height_item)
-        txtinput_pers.text = text_person
+#---End
 
-        bxlt.add_widget(txtinput_pers)
-        data_grid.add_widget(bxlt)
-        self.input_persons.append(txtinput_pers)
-
-    def update_tax_popup(self):
-        taxtip_prices = []
-        taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
-        taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
-        popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
-        popup.txtinput_tax_price.focus = True
-        popup.open()    
-    
-    def update_tip_popup(self):
-        taxtip_prices = []
-        taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
-        taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
-        print(taxtip_prices)
-        popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
-        popup.txtinput_tip_price.focus = True
-        popup.open() 
-
-    def update_taxtip_popup_dismiss(self,tax_desc, tax_price, tip_desc, tip_price):
-        tax_btn = self.ids.mn_left_tax_txinput
-        tip_btn = self.ids.mn_left_tip_txinput
-        tax_btn.text = tax_price.text
-        tip_btn.text = tip_price.text
-        self.update_totals(self, tax_btn.text)
-
-    def update_totals(self, instance, text):
-        prices = []
-        for i in range(len(self.input_items)):
-            prices.append(self.input_items[i][1])
-
-        subtotal = 0.00
-        grandtotal = 0.00
-        tax = 0.00
-        tip = 0.00
-
-        tax_txtinput = self.ids.mn_left_tax_txinput
-        tip_txtinput = self.ids.mn_left_tip_txinput
-
-        for p in prices:
-            if p.text != "":
-                subtotal = subtotal + float(p.text)
-
-        if subtotal != 0:
-            if tax_txtinput.text != "":
-                tax = float(tax_txtinput.text)
-            if tip_txtinput.text != "":
-                tip = float(tip_txtinput.text)
-            
-        if tax != 0:
-            grandtotal = grandtotal + tax
-        if tip != 0:
-            grandtotal = grandtotal + tip
-        
-        if subtotal != 0:
-            grandtotal = grandtotal + subtotal
-
-            tax_factor = tax/subtotal
-            tip_factor = tip/subtotal
-            tax = tax_factor*100
-            tip = tip_factor*100
-
-        self.ids.mn_left_sbtotal_label_price.text = f'{subtotal:.2f}'
-        self.ids.mn_left_tax_label_desc.text = f'Tax ({tax:.2f}%)'
-        self.ids.mn_left_tip_label_desc.text = f'Tip ({tip:.2f}%)'
-        self.ids.mn_left_grtotal_label_price.text = f'{grandtotal:.2f}'
-    
 class GridScreen(Screen):
     def __init__(self, **kwargs):
         super(GridScreen, self).__init__(**kwargs)
         self.button_grid = []
         self.grid_objects = []
         self.items = []
-        self.persons =[]
-
+        self.persons = []
+        
     def on_enter(self):
         mn_screen = self.manager.get_screen("main_screen")
 
-        items = mn_screen.input_items
-        persons = mn_screen.input_persons
-        new_btn_grd = []
+        #Remove empty values in dict array
+        self.items = []
+        for my_dict in mn_screen.items:
+            if my_dict['item_val'] == '' and my_dict['price_val'] == 0.0:
+                pass
+            else:
+                self.items.append(my_dict)
         
+        self.persons = []
+        for my_dict in mn_screen.persons:
+            if my_dict['value'] != '':
+                self.persons.append(my_dict)
+
+
+        self.print_dict()
+        new_btn_grd = []
 
         layout_left = self.ids.grd_left_scview_grdlt
         layout_right = self.ids.grd_right_scview_grdlt
@@ -306,30 +402,29 @@ class GridScreen(Screen):
         self.height_item = mn_screen.height_item
         self.width_item = mn_screen.width_item
 
+        layout_right.cols = len(self.persons)
 
-        layout_right.cols = len(persons)
-
-        layout_right_hdr.cols = len(persons)
+        layout_right_hdr.cols = len(self.persons)
         layout_right_hdr.size_hint = (None, None)
         
-        layout_right_btm.cols = len(persons)
+        layout_right_btm.cols = len(self.persons)
         layout_right_btm.size_hint = (None, None)
 
-        #Adds persons
+        #Adds self.persons
         row_objects = []
-        for i in range(len(persons)):
-            label_item = ButtonType4(text=f'{persons[i].text}',size_hint=(None,None), height=self.height_item, width = self.width_item)
+        for i in range(len(self.persons)):
+            label_item = ButtonType4(text=self.persons[i]['value'],size_hint=(None,None), height=self.height_item, width = self.width_item)
             label_item.bind(on_release=self.generate_summary)
             row_objects.append(label_item)
             layout_right_hdr.add_widget(label_item)
         
-        #Add items
-        for i in range(len(items)):
+        #Add self.items
+        for i in range(len(self.items)):
             row_objects = []
             bxlt = BoxLayout(orientation='horizontal', size_hint_y=None, height=self.height_item)
             
-            label_item = Label(text=f'{items[i][0].text}', size_hint_x=0.5)
-            label_price = Label(text=f'{float(items[i][1].text):.2f}', size_hint_x=0.25)
+            label_item = Label(text=self.items[i]['item_val'], size_hint_x=0.5)
+            label_price = Label(text=str(self.items[i]['price_val']), size_hint_x=0.25)
             label_qty = Label(text='0', size_hint_x=0.25)
             
             bxlt.add_widget(label_item)
@@ -340,7 +435,7 @@ class GridScreen(Screen):
             Clock.schedule_once(lambda dt, bxlt=bxlt: self.align_label_bxlt(bxlt), 0.05)
             
             #Add Buttons
-            for j in range(len(persons)):
+            for j in range(len(self.persons)):
 
                 bxlt = RelativeLayout(size_hint=(None, None), height=self.height_item, width = self.width_item)
                 button = ButtonType4(text='Add' )
@@ -354,8 +449,7 @@ class GridScreen(Screen):
                 bxlt.add_widget(label_qty)
                 
                 layout_right.add_widget(bxlt)
-                item_bxlt = items[i][0].parent
-                person_bxlt = persons[j].parent
+
                 my_dict = {
                     'id': button,
                     'state': False,
@@ -366,14 +460,12 @@ class GridScreen(Screen):
                     'value': 0.00,
                     'row': i,
                     'col': j,
-                    'item_bxlt': items[i][0].parent,
-                    'person_bxlt': persons[j].parent
+                    'item_bxlt': self.items[i]['id'],
+                    'person_bxlt': self.persons[j]['id']
                 }
                 new_btn_grd.append(my_dict)
         
-        
         Clock.schedule_once(lambda dt, bxlt=bxlt: self.align_label_btn(layout_right), 0.05)
-        
 
         merge_btn_grd = self.merge_btn_grd(self.button_grid, new_btn_grd)
         self.button_grid = []
@@ -386,11 +478,12 @@ class GridScreen(Screen):
         #     print('\n')
         #     label = my_dict['modifier_id']
         #     label.color = [1,1,1,1]
+
         #Right Subtotal/Tax/Tip/Grandtotal
         row = 4
         label_total = self.ids.grd_left_ftr_sbtotal_label_total
 
-        for i in range(len(persons)*row):
+        for i in range(len(self.persons)*row):
             label_item = Label(text=f'0.00',size_hint=(None,None), height=label_total.height, width = self.width_item)
             layout_right_btm.add_widget(label_item)
         
@@ -398,6 +491,17 @@ class GridScreen(Screen):
         self.update_ftr_totals()
         Clock.schedule_once(lambda dt: self.load_btn_state(), 0.05)
     
+    def print_dict(self):
+        print('\n--------------------ITEMS--------------------\n')
+        for my_dict in self.items:
+            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            print('\n')
+
+        print('\n--------------------PERSON--------------------\n')
+        for my_dict in self.persons:
+            pprint.PrettyPrinter(indent=4,sort_dicts=False).pprint(my_dict)
+            print('\n')
+
     def merge_btn_grd(self, old_grd, new_grd):
         if len(old_grd) > 0:
             for old_dict in old_grd:
@@ -1479,7 +1583,6 @@ class ClearTextInput(TextInput):
 
         autofit_txtinput = MyFunctions()
         Clock.schedule_once(lambda dt: autofit_txtinput.txtinput_autofit_item(self), 0.05)
-
 
 class ItemBoxLayoutAuto(BoxLayout):
     def __init__(self, on_dismiss_callback, item_height, **kwargs):
