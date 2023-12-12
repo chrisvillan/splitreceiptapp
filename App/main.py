@@ -20,7 +20,7 @@ from kivy.uix.image import Image
 from kivy.graphics import Rectangle, Color, BoxShadow, RoundedRectangle, Ellipse
 from kivy.core.clipboard import Clipboard
 from kivy.uix.relativelayout import RelativeLayout
-
+from kivy.uix.checkbox import CheckBox
 from kivy.lang import Builder
 
 import os
@@ -44,24 +44,24 @@ class MainScreen(Screen):
         self.items = []
         self.persons = []
         self.add_init = False
+        self.checkbox_mode = False
+        
+        
 
     def on_enter(self):
         if self.name == 'main_screen':
             if self.add_init == False:
-                self.additem_left_init()
-                self.addperson_right_init()
+                Clock.schedule_once(lambda dt: self.additem_left_init(), 0.05)
+                Clock.schedule_once(lambda dt: self.addperson_right_init(), 0.05)
                 self.add_init = True
 
     def switch_to_grid_screen(self):
-        # if len(self.input_items) >= 2 and len(self.input_persons) >=2:
-        #     self.manager.current = 'grid_screen'
-        #     self.manager.transition.direction = "left"
-        # else:
-        #     popup = WarningPopup(label_text='Please add more items/person\nMinimum of 2 items and 2 persons')
-        #     popup.open()
-
-        self.manager.current = 'grid_screen'
-        self.manager.transition.direction = "left"
+        if len(self.items) >= 2 and len(self.persons) >=2:
+            self.manager.current = 'grid_screen'
+            self.manager.transition.direction = "left"
+        else:
+            popup = WarningPopup(label_text='Please add more items/person\nMinimum of 2 items and 2 persons')
+            popup.open()
 
     #Preset
     def add_preset_auto(self):
@@ -94,8 +94,9 @@ class MainScreen(Screen):
         left_grid = self.ids.mn_left_scview_grdlt
     
         bxlt = left_grid.children[0]
-        txtinput_item = bxlt.children[2]
-        txtinput_price = bxlt.children[0]
+        bxlt_item = bxlt.children[0]
+        txtinput_item = bxlt_item.children[2]
+        txtinput_price = bxlt_item.children[0]
 
         txtinput_item.focus = True
         txtinput_item.text = text_item
@@ -104,17 +105,18 @@ class MainScreen(Screen):
         txtinput_price.focus = False
   
     def additem_left_init(self):
-        print('ADD ITEM INIT')
         data_grid = self.ids.mn_left_scview_grdlt
-        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        bxlt = BoxLayout(orientation='horizontal', size_hint=(1, None), height=self.height_item)
+        bxlt_item = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
         
+        bxlt.add_widget(bxlt_item)
         data_grid.add_widget(bxlt)
 
-        txtinput_item = bxlt.children[2]
-        txtinput_price = bxlt.children[0]
+        txtinput_item = bxlt_item.children[2]
+        txtinput_price = bxlt_item.children[0]
         
         my_dict ={
-            'id': bxlt,
+            'id': bxlt_item,
             'item_id': txtinput_item,
             'price_id': txtinput_price,
             'item_val': '',
@@ -128,25 +130,29 @@ class MainScreen(Screen):
         
         data_grid = self.ids.mn_left_scview_grdlt
         bxlt_prev = data_grid.children[0]
-        txtinput_item = bxlt_prev.children[2]
-        txtinput_price = bxlt_prev.children[0]
+        bxlt_item_prev = bxlt_prev.children[0]
+        txtinput_item = bxlt_item_prev.children[2]
+        txtinput_price = bxlt_item_prev.children[0]
         price = 0.00
 
-        self.change_dict_val(bxlt_prev, 'item_val',txtinput_item.text,self.items)
-        
+        self.change_dict_val(bxlt_item_prev, 'item_val',txtinput_item.text,self.items)
+
         if txtinput_price.text != '':
             price = float(txtinput_price.text)
         
-        self.change_dict_val(bxlt_prev, 'price_val',price,self.items)
+        self.change_dict_val(bxlt_item_prev, 'price_val',price,self.items)
 
-        bxlt = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        bxlt = BoxLayout(orientation='horizontal', size_hint=(1, None), height=self.height_item)
+        bxlt_item = ItemBoxLayoutAuto(on_dismiss_callback=self.additem_left_auto_dismiss, orientation='horizontal',size_hint=(1, None), height=self.height_item, item_height=self.height_item)
+        
+        bxlt.add_widget(bxlt_item)
         data_grid.add_widget(bxlt)
 
-        txtinput_item = bxlt.children[2]
-        txtinput_price = bxlt.children[0]
+        txtinput_item = bxlt_item.children[2]
+        txtinput_price = bxlt_item.children[0]
 
         my_dict ={
-            'id': bxlt,
+            'id': bxlt_item,
             'item_id': txtinput_item,
             'price_id': txtinput_price,
             'item_val': '',
@@ -157,15 +163,19 @@ class MainScreen(Screen):
         self.items.append(my_dict)
 
         if state == "Enter":
-            txtinput = bxlt.children[2]
+            txtinput = bxlt_item.children[2]
             txtinput.focus = True
+
+        self.update_totals()
+
          
     # Add Person
     def addperson_right(self, text_person):
         right_grid = self.ids.mn_right_scview_grdlt
 
         bxlt = right_grid.children[0]
-        txtinput_person = bxlt.children[0]
+        bxlt_pers = bxlt.children[0]
+        txtinput_person = bxlt_pers.children[0]
 
         txtinput_person.focus = True
         txtinput_person.text = text_person
@@ -174,14 +184,16 @@ class MainScreen(Screen):
     def addperson_right_init(self):
         data_grid = self.ids.mn_right_scview_grdlt
         
-        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
+        bxlt = BoxLayout(orientation='horizontal', size_hint=(1, None), height=self.height_item)
+        bxlt_pers = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
         txtinput_pers = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss, size_hint=(1, None), height=self.height_item)
         
-        bxlt.add_widget(txtinput_pers)
+        bxlt_pers.add_widget(txtinput_pers)
+        bxlt.add_widget(bxlt_pers)
         data_grid.add_widget(bxlt)
 
         my_dict = {
-            'id': bxlt,
+            'id': bxlt_pers,
             'person_id': txtinput_pers,
             'value': '',
             'row': 0
@@ -190,20 +202,22 @@ class MainScreen(Screen):
 
     def addperson_right_auto_dismiss(self,state):
         data_grid = self.ids.mn_right_scview_grdlt
-        bxlt_prev = data_grid.children[0]
-        txtinput_pers = bxlt_prev.children[0]
+        bxlt = data_grid.children[0]
+        bxlt_pers_prev = bxlt.children[0]
+        txtinput_pers = bxlt_pers_prev.children[0]
 
-        self.change_dict_val(bxlt_prev,'value',txtinput_pers.text,self.persons)
+        self.change_dict_val(bxlt_pers_prev,'value',txtinput_pers.text,self.persons)
         
-        bxlt = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
-        
+        bxlt = BoxLayout(orientation='horizontal', size_hint=(1, None), height=self.height_item)
+        bxlt_pers = BoxLayoutType2(orientation='horizontal',size_hint=(1, None), height=self.height_item)
         txtinput_pers = PersonTextInputAuto(on_dismiss_callback=self.addperson_right_auto_dismiss,  multiline=False, size_hint=(1, None), height=self.height_item)
         
-        bxlt.add_widget(txtinput_pers)
+        bxlt_pers.add_widget(txtinput_pers)
+        bxlt.add_widget(bxlt_pers)
         data_grid.add_widget(bxlt)
 
         my_dict = {
-            'id': bxlt,
+            'id': bxlt_pers,
             'person_id': txtinput_pers,
             'value': '',
             'row': 0
@@ -226,7 +240,6 @@ class MainScreen(Screen):
         taxtip_prices = []
         taxtip_prices.append(self.ids.mn_left_tax_txinput.text)
         taxtip_prices.append(self.ids.mn_left_tip_txinput.text)
-        print(taxtip_prices)
         popup = TaxTipPopup(on_dismiss_callback=self.update_taxtip_popup_dismiss, prices=taxtip_prices)
         popup.txtinput_tip_price.focus = True
         popup.open() 
@@ -312,13 +325,138 @@ class MainScreen(Screen):
         for my_dict in grid:
             if my_dict['id'] == id:
                 return my_dict[key]
+            
+    def delete_dict(self, id, grid):
+        for i in range(len(grid)):
+            my_dict = grid[i]
+            if my_dict['id'] == id:
+                grid.pop(i)
+                break
+
+    # Edit Items/Persons
+    def add_checkbox(self):
+        data_grid_left = self.ids.mn_left_scview_grdlt
+        data_grid_right = self.ids.mn_right_scview_grdlt
+
+        mn_left_bxlt = self.ids.mn_left_bxlt
+        mn_right_bxlt = self.ids.mn_right_bxlt
+        mn_left_bxlt.size_hint_x = 0.6
+        mn_right_bxlt.size_hint_x = 0.4
+
+        if self.checkbox_mode == False:
+            for i in range(len(data_grid_left.children)):
+                bxlt = data_grid_left.children[i]
+                bxlt.spacing = 10
+                if i != 0:
+                    chkbox = CheckBox(size_hint_x=0.1)
+                    bxlt.add_widget(chkbox,1)
+                else:
+                    bxlt_empty = BoxLayout(size_hint_x=0.1)
+                    bxlt.add_widget(bxlt_empty,1)
+            
+            for i in range(len(data_grid_right.children)):
+                bxlt = data_grid_right.children[i]
+                bxlt.spacing = 10
+                # bxlt.padding = (10,0,10,0)
+                if i != 0:
+                    chkbox = CheckBox(size_hint_x=0.1)
+                    bxlt.add_widget(chkbox)
+                else:
+                    bxlt_empty = BoxLayout(size_hint_x=0.1)
+                    bxlt.add_widget(bxlt_empty)
+
+            mn_bxlt = self.ids.mn_bxlt
+            self.bxlt_btn = BoxLayout(orientation='horizontal', size_hint_y=0.05, padding=(0,10,0,0))
+            self.btn_clear_chkbox = ButtonType3(text='Clear Selected', size_hint_x=0.7)
+            self.btn_clear_chkbox.bind(on_release=self.clear_selected)
+
+            btn_clear_all = ButtonType3(text='Select All', size_hint_x=0.2)
+
+            self.bxlt_btn.add_widget(self.btn_clear_chkbox)
+            self.bxlt_btn.add_widget(btn_clear_all)
+            mn_bxlt.add_widget(self.bxlt_btn, len(mn_bxlt.children)-1)
+            self.checkbox_mode = True
+        else:
+            #unselect checkboxes
+            for bxlt in data_grid_left.children:
+                wdgt = bxlt.children[1]
+                if isinstance(wdgt, CheckBox):
+                    if wdgt.active == True:
+                        wdgt.active = False
+
+            for bxlt in data_grid_right.children:
+                wdgt = bxlt.children[0]
+                if isinstance(wdgt, CheckBox):
+                    if wdgt.active == True:
+                        wdgt.active = False
+
+            self.btn_clear_chkbox.trigger_action(duration=0.05)
+            self.checkbox_mode = False
+
+    def clear_selected(self, instance):
+        data_grid_left = self.ids.mn_left_scview_grdlt
+        data_grid_right = self.ids.mn_right_scview_grdlt
+
+        #remove selected items
+        bxlt_delete = []
+        for bxlt in data_grid_left.children:
+            wdgt = bxlt.children[1]
+            if isinstance(wdgt, CheckBox):
+                if wdgt.active == True:
+                    bxlt_delete.append([bxlt, bxlt.children[0]])
+
+        for i in range(len(bxlt_delete)):
+            data_grid_left.remove_widget(bxlt_delete[i][0])
+            self.delete_dict(bxlt_delete[i][1], self.items)
+
+        #remove selected persons
+        bxlt_delete = []
+        for bxlt in data_grid_right.children:
+            wdgt = bxlt.children[0]
+            if isinstance(wdgt, CheckBox):
+                if wdgt.active == True:
+                    bxlt_delete.append([bxlt, bxlt.children[1]])
+
+        for i in range(len(bxlt_delete)):
+            data_grid_right.remove_widget(bxlt_delete[i][0])
+            self.delete_dict(bxlt_delete[i][1], self.persons)
+
+        #remove button
+        mn_bxlt = self.ids.mn_bxlt
+        mn_bxlt.remove_widget(self.bxlt_btn)
+
+        #remove checkboxes
+        for bxlt in data_grid_left.children:
+            wdgt = bxlt.children[1]
+            bxlt.remove_widget(wdgt)
+
+        for bxlt in data_grid_right.children:
+            wdgt = bxlt.children[0]
+            bxlt.remove_widget(wdgt)
+        
+        self.checkbox_mode = False
+
+        mn_left_bxlt = self.ids.mn_left_bxlt
+        mn_right_bxlt = self.ids.mn_right_bxlt
+        mn_left_bxlt.size_hint_x = 0.7
+        mn_right_bxlt.size_hint_x = 0.3
+        self.update_totals()
 
     # Clear Items
     def clear_all_items(self):
-        self.input_persons= []
+        self.persons= []
         self.ids.mn_right_scview_grdlt.clear_widgets()
-        self.input_items = []
+        self.items = []
         self.ids.mn_left_scview_grdlt.clear_widgets()
+
+        tax_btn = self.ids.mn_left_tax_txinput
+        tip_btn = self.ids.mn_left_tip_txinput
+        tax_btn.text = '0.00'
+        tip_btn.text = '0.00'
+
+        self.additem_left_init()
+        self.addperson_right_init()
+        self.update_totals()
 
     def clear_all_items_popup(self):
         popup = ConfirmPopup(on_dismiss_callback=self.clear_all_items, label_text='Clear all?')
@@ -339,26 +477,6 @@ class MainScreen(Screen):
     def clear_right_items(self):
         self.input_persons= []
         self.ids.mn_right_scview_grdlt.clear_widgets()
-
-#---Unused popups
-    def additem_popup(self):
-        popup = AddItemPopup(on_dismiss_callback=self.additem_popup_dismiss)
-        popup.open()
-
-    def additem_popup_dismiss(self, text_item, text_price):
-        if text_item != '' or text_price != '':
-            if text_price == '':
-                text_price ='0.00'
-            self.additem_left(text_item, text_price)
-
-    def addperson_popup(self):
-        popup = AddPersonPopup(on_dismiss_callback=self.addperson_popup_dismiss)
-        popup.open()
-
-    def addperson_popup_dismiss(self, text_person):
-        if text_person !='':
-            self.addperson_right(text_person)
-#---End
 
 class GridScreen(Screen):
     def __init__(self, **kwargs):
@@ -1718,6 +1836,10 @@ class ButtonType1(Button):
 class ButtonType2(Button):
     def __init__(self, **kwargs):
         super(ButtonType2, self).__init__(**kwargs)
+
+class ButtonType3(Button):
+    def __init__(self, **kwargs):
+        super(ButtonType3, self).__init__(**kwargs)
 
 class ButtonType4(Button):
     def __init__(self, **kwargs):

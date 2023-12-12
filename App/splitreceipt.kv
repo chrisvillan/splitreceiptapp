@@ -25,6 +25,7 @@ ScreenManager:
             on_release: root.switch_to_grid_screen()
             size_hint_y: 0.1
             color: 1,1,1,1
+        
 
         # Below button
         BoxLayout:
@@ -38,7 +39,7 @@ ScreenManager:
                 orientation: 'vertical'
                 size_hint_x: 0.7
                 spacing: 10
-                padding: 10
+                padding: 10,10,5,10
                 
                 # Left Scrollview 
                 ScrollView:
@@ -139,7 +140,7 @@ ScreenManager:
                 orientation: 'vertical'
                 size_hint_x: 0.3
                 spacing: 10
-                padding: 10
+                padding: 5,10,10,10
 
                 ScrollView:
                     id: mn_right_scview
@@ -154,10 +155,11 @@ ScreenManager:
                         size_hint_y: None
                         height: self.minimum_height
                         spacing: 5
+
                 ButtonType2:
                     id: mn_right_addprsn_btn
-                    text: "Add Person"
-                    on_release: 
+                    text: "Edit Items"
+                    on_release: root.add_checkbox()
                     size_hint_y: 0.1
                     color: 1,1,1,1
 
