@@ -249,7 +249,7 @@ class MainScreen(Screen):
         tip_btn = self.ids.mn_left_tip_txinput
         tax_btn.text = tax_price.text
         tip_btn.text = tip_price.text
-        self.update_totals(self, tax_btn.text)
+        self.update_totals()
 
     def update_totals(self):
 
